@@ -1,6 +1,7 @@
 // pages/[id].js
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
+import Image from 'next/image'
 import { supabase } from '../lib/supabase'
 
 export default function TrainerPage({ trainer }) {
@@ -98,22 +99,27 @@ export default function TrainerPage({ trainer }) {
           overflow: 'hidden',
           background: '#1a1a2e'
         }}>
-          <img 
-            src={trainer.hero_image || trainer.photo_url}
-            alt={trainer.name}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
-              transform: `scale(${1 + scrollY * 0.0005})`,
-              transition: 'transform 0.1s',
-              opacity: 0.9
-            }} 
-          />
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            transform: `scale(${1 + scrollY * 0.0005})`,
+            transition: 'transform 0.1s'
+          }}>
+            <Image 
+              src={trainer.hero_image || trainer.photo_url}
+              alt={trainer.name}
+              fill
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center',
+                opacity: 0.9
+              }}
+              priority
+            />
+          </div>
           
           <div style={{
             position: 'absolute',
@@ -198,17 +204,11 @@ export default function TrainerPage({ trainer }) {
               borderRadius: '10px',
               border: `2px solid ${t.primary}20`
             }}>
-              <img 
+              <Image 
                 src={trainer.photo_url}
                 alt={trainer.name}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
+                fill
+                style={{ objectFit: 'cover' }}
               />
             </div>
 
@@ -258,28 +258,27 @@ export default function TrainerPage({ trainer }) {
                 ))}
               </div>
               
-              {/* ここに追加 ↓ */}
-<div style={{
-  fontSize: 'clamp(60px, 10vw, 120px)',
-  fontWeight: '900',
-  color: 'transparent',
-  WebkitTextStroke: `1px ${t.primary}`,
-  opacity: 0.3,
-  lineHeight: 1,
-  marginTop: '40px'
-}}>
-  {trainer.experience_years}
-  <div style={{
-    fontSize: 'clamp(12px, 2vw, 16px)',
-    letterSpacing: '0.3em',
-    color: t.primary,
-    fontWeight: '300',
-    marginTop: '10px',
-    WebkitTextStroke: '0'
-  }}>
-    YEARS EXP
-  </div>
-</div>
+              <div style={{
+                fontSize: 'clamp(60px, 10vw, 120px)',
+                fontWeight: '900',
+                color: 'transparent',
+                WebkitTextStroke: `1px ${t.primary}`,
+                opacity: 0.3,
+                lineHeight: 1,
+                marginTop: '40px'
+              }}>
+                {trainer.experience_years}
+                <div style={{
+                  fontSize: 'clamp(12px, 2vw, 16px)',
+                  letterSpacing: '0.3em',
+                  color: t.primary,
+                  fontWeight: '300',
+                  marginTop: '10px',
+                  WebkitTextStroke: '0'
+                }}>
+                  YEARS EXP
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -312,19 +311,38 @@ export default function TrainerPage({ trainer }) {
                 boxShadow: `0 0 100px ${t.primary}40`,
                 border: `1px solid ${t.primary}20`
               }}>
-            <iframe
-  src={`${trainer.youtube_url.replace('watch?v=', 'embed/')}?rel=0&modestbranding=1`}
-  style={{
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    border: 'none'
-  }}
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen
-/>
+                <Image 
+                  src={trainer.full_body_image || trainer.photo_url}
+                  alt="Performance"
+                  fill
+                  style={{
+                    objectFit: 'cover',
+                    opacity: 0.7
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  background: `linear-gradient(135deg, ${t.gradientStart}40, ${t.gradientEnd}40)`,
+                  backdropFilter: 'blur(10px)'
+                }} />
+                <iframe
+                  src={`${trainer.youtube_url.replace('watch?v=', 'embed/')}?rel=0&modestbranding=1`}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    zIndex: 1
+                  }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
             </div>
           </section>
@@ -379,66 +397,68 @@ export default function TrainerPage({ trainer }) {
             }}>
               LET'S TALK
             </h2>
+            
             <div style={{
-  display: 'flex',
-  gap: '20px',
-  justifyContent: 'center',
-  marginBottom: '40px',
-  flexWrap: 'wrap'
-}}>
-  {[
-    { label: 'IG', url: trainer.instagram_url },
-    { label: 'X', url: trainer.twitter_url },
-    { label: 'YT', url: trainer.youtube_url },
-    { label: 'LINE', url: trainer.line_url }
-  ].filter(item => item.url).map((item, i) => (
-    <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{
-      width: '50px',
-      height: '50px',
-      border: `2px solid ${t.primary}`,
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: t.primary,
-      fontSize: '11px',
-      textDecoration: 'none',
-      transition: 'all 0.3s',
-      fontWeight: '600'
-    }}>
-      {item.label}
-    </a>
-  ))}
-</div>
-          <a 
-  href={trainer.contact}
-  target="_blank"
-  rel="noopener noreferrer"
-  style={{
-    padding: '25px 80px',
-    background: 'transparent',
-    border: `2px solid ${t.primary}`,
-    color: t.primary,
-    fontSize: '14px',
-    letterSpacing: '0.3em',
-    cursor: 'pointer',
-    transition: 'all 0.3s',
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    textDecoration: 'none',
-    display: 'inline-block'
-  }}
-  onMouseEnter={(e) => {
-    e.target.style.background = t.primary;
-    e.target.style.color = '#000';
-  }}
-  onMouseLeave={(e) => {
-    e.target.style.background = 'transparent';
-    e.target.style.color = t.primary;
-  }}
->
-  Contact
-</a>
+              display: 'flex',
+              gap: '20px',
+              justifyContent: 'center',
+              marginBottom: '40px',
+              flexWrap: 'wrap'
+            }}>
+              {[
+                { label: 'IG', url: trainer.instagram_url },
+                { label: 'X', url: trainer.twitter_url },
+                { label: 'YT', url: trainer.youtube_url },
+                { label: 'LINE', url: trainer.line_url }
+              ].filter(item => item.url).map((item, i) => (
+                <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{
+                  width: '50px',
+                  height: '50px',
+                  border: `2px solid ${t.primary}`,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: t.primary,
+                  fontSize: '11px',
+                  textDecoration: 'none',
+                  transition: 'all 0.3s',
+                  fontWeight: '600'
+                }}>
+                  {item.label}
+                </a>
+              ))}
+            </div>
+            
+            <a 
+              href={trainer.contact}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                padding: '25px 80px',
+                background: 'transparent',
+                border: `2px solid ${t.primary}`,
+                color: t.primary,
+                fontSize: '14px',
+                letterSpacing: '0.3em',
+                cursor: 'pointer',
+                transition: 'all 0.3s',
+                textTransform: 'uppercase',
+                fontWeight: '600',
+                textDecoration: 'none',
+                display: 'inline-block'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = t.primary;
+                e.target.style.color = '#000';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent';
+                e.target.style.color = t.primary;
+              }}
+            >
+              Contact
+            </a>
           </div>
         </section>
 
@@ -494,20 +514,14 @@ export default function TrainerPage({ trainer }) {
   )
 }
 
-// サーバーサイドでデータ取得
 export async function getServerSideProps({ params }) {
-  console.log('Fetching trainer with slug:', params.id)
-  
   const { data: trainer, error } = await supabase
     .from('trainers')
     .select('*')
-    .eq('slug', params.id)
+    .eq('slug', params.slug)
     .single()
   
-  console.log('Supabase response:', { trainer, error })
-  
   if (error || !trainer) {
-    console.log('Trainer not found or error occurred')
     return { notFound: true }
   }
   
