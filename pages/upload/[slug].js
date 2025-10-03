@@ -80,6 +80,15 @@ export default function UploadPage({ trainer }) {
     setMessage('アップロード中...')
 
     try {
+      // 現在のステータスを取得（更新判定用）
+      const { data: currentTrainer } = await supabase
+        .from('trainers')
+        .select('status')
+        .eq('slug', trainer.slug)
+        .single()
+      
+      const wasActive = currentTrainer?.status === 'active'
+
       await deleteOldFiles(trainer.slug, 'profile')
       if (heroImage) {
         await deleteOldFiles(trainer.slug, 'hero')
@@ -129,10 +138,18 @@ export default function UploadPage({ trainer }) {
 
       if (updateError) throw updateError
 
-      setMessage('アップロード完了！')
+      const pageUrl = `${window.location.origin}/${trainer.slug}`
+      setMessage(
+        `✅ アップロード完了しました\n\n` +
+        `🌐 あなたのページURL:\n${pageUrl}\n\n` +
+        `📷 登録いただいた画像は確認中です\n` +
+        `確認完了まで1〜3営業日お待ちください\n\n` +
+        `※ページはすぐにご覧いただけます`
+      )
+      
       setTimeout(() => {
         router.push(`/${trainer.slug}`)
-      }, 2000)
+      }, 5000)
 
     } catch (error) {
       setMessage(`エラー: ${error.message}`)
