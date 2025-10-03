@@ -347,7 +347,69 @@ export default function TrainerPage({ trainer }) {
             </div>
           </section>
         )}
-
+{/* 音楽リリース */}
+{(trainer.spotify_url || trainer.apple_music_url) && (
+  <section style={{
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    background: '#000',
+    padding: '100px 20px'
+  }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <div style={{
+        fontSize: '10px',
+        letterSpacing: '0.3em',
+        color: t.primary,
+        marginBottom: '60px',
+        textAlign: 'center',
+        textTransform: 'uppercase'
+      }}>
+        Music Releases
+      </div>
+      
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '30px',
+        justifyItems: 'center'
+      }}>
+        {trainer.spotify_url && (
+          <iframe 
+            src={`https://open.spotify.com/embed/${trainer.spotify_url.includes('album') ? 'album' : 'track'}/${trainer.spotify_url.split('/').pop().split('?')[0]}`}
+            width="100%" 
+            height="380" 
+            frameBorder="0" 
+            allowTransparency="true" 
+            allow="encrypted-media"
+            style={{
+              borderRadius: '12px',
+              border: `1px solid ${t.primary}20`
+            }}
+          />
+        )}
+        
+        {trainer.apple_music_url && (
+          <iframe 
+            allow="autoplay *; encrypted-media *;" 
+            frameBorder="0" 
+            height="450" 
+            style={{
+              width: '100%',
+              maxWidth: '660px',
+              overflow: 'hidden',
+              background: 'transparent',
+              borderRadius: '12px',
+              border: `1px solid ${t.primary}20`
+            }}
+            sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" 
+            src={trainer.apple_music_url.replace('music.apple.com', 'embed.music.apple.com')}
+          />
+        )}
+      </div>
+    </div>
+  </section>
+)}
         {/* 詳細 */}
         <section style={{
           minHeight: '100vh',
