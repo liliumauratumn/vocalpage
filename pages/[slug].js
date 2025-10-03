@@ -1,4 +1,4 @@
-// pages/[id].js
+// pages/[slug].js
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
