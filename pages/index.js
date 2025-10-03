@@ -24,7 +24,7 @@ export default function Home({ trainers }) {
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent'
       }}>
-        VocalPage0
+        VocalPage
       </h1>
       
       <p style={{
@@ -36,65 +36,71 @@ export default function Home({ trainers }) {
         Voice Trainer Portfolio
       </p>
 
-      <div style={{
-        display: 'flex',
-        gap: '40px',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        maxWidth: '800px'
-      }}>
-        {trainers.map(trainer => (
-          <Link 
-            key={trainer.slug} 
-            href={`/${trainer.slug}`}
-            style={{
-              textDecoration: 'none',
-              color: '#fff',
-              textAlign: 'center',
-              transition: 'transform 0.3s'
-            }}
-          >
-            <div style={{
-              width: '150px',
-              height: '150px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              border: '3px solid #00d4ff',
-              marginBottom: '15px',
-              position: 'relative',
-              transition: 'all 0.3s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)'
-              e.currentTarget.style.borderColor = '#667eea'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)'
-              e.currentTarget.style.borderColor = '#00d4ff'
-            }}>
-              <Image
-                src={trainer.photo_url}
-                alt={trainer.name}
-                fill
-                style={{ objectFit: 'cover' }}
-              />
-            </div>
-            <div style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              marginBottom: '5px'
-            }}>
-              {trainer.name}
-            </div>
-            <div style={{
-              fontSize: '12px',
-              color: 'rgba(255,255,255,0.5)'
-            }}>
-              {trainer.area}
-            </div>
-          </Link>
-        ))}
-      </div>
+      {trainers.length === 0 ? (
+        <p style={{ color: 'rgba(255,255,255,0.3)' }}>
+          公開中のトレーナーはまだいません
+        </p>
+      ) : (
+        <div style={{
+          display: 'flex',
+          gap: '40px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          maxWidth: '800px'
+        }}>
+          {trainers.map(trainer => (
+            <Link 
+              key={trainer.slug} 
+              href={`/${trainer.slug}`}
+              style={{
+                textDecoration: 'none',
+                color: '#fff',
+                textAlign: 'center',
+                transition: 'transform 0.3s'
+              }}
+            >
+              <div style={{
+                width: '150px',
+                height: '150px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '3px solid #00d4ff',
+                marginBottom: '15px',
+                position: 'relative',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)'
+                e.currentTarget.style.borderColor = '#667eea'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.borderColor = '#00d4ff'
+              }}>
+                <Image
+                  src={trainer.photo_url}
+                  alt={trainer.name}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '5px'
+              }}>
+                {trainer.name}
+              </div>
+              <div style={{
+                fontSize: '12px',
+                color: 'rgba(255,255,255,0.5)'
+              }}>
+                {trainer.area}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -103,8 +109,8 @@ export async function getServerSideProps() {
   const { data: trainers } = await supabase
     .from('trainers')
     .select('slug, name, photo_url, area')
-    .in('slug', ['yamada', 'sato', 'suzuki'])
-    .order('slug')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
 
   return {
     props: { trainers: trainers || [] }
