@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
+import { themes, getTheme, getAllThemeKeys } from '../lib/themes'
 import MusicSection from '../components/MusicSection'
 import ProfileSection from '../components/ProfileSection'
 import VideoSection from '../components/VideoSection'
@@ -18,33 +19,6 @@ export default function TrainerPage({ trainer }) {
 
   if (!trainer) {
     return <div>トレーナーが見つかりません</div>
-  }
-
-  const themes = {
-    blue: {
-      name: 'CYAN',
-      primary: '#00d4ff',
-      secondary: '#0099ff',
-      gradientStart: '#667eea',
-      gradientEnd: '#00d4ff',
-      overlay: 'rgba(0, 50, 100, 0.7)'
-    },
-    purple: {
-      name: 'VIOLET',
-      primary: '#d946ef',
-      secondary: '#a855f7',
-      gradientStart: '#8b5cf6',
-      gradientEnd: '#ec4899',
-      overlay: 'rgba(80, 0, 80, 0.7)'
-    },
-    orange: {
-      name: 'SUNSET',
-      primary: '#ff6b35',
-      secondary: '#fbbf24',
-      gradientStart: '#f59e0b',
-      gradientEnd: '#ef4444',
-      overlay: 'rgba(100, 30, 0, 0.7)'
-    }
   }
 
   const t = themes[theme]
