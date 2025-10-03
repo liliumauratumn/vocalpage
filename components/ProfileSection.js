@@ -1,7 +1,6 @@
 import Image from 'next/image'
 
-export default function ProfileSection({ trainer, theme }) {
-  // 経験年数を自動計算
+export default function ProfileSection({ trainer, theme, isPending }) {
   const experienceYears = trainer.career_start_year 
     ? new Date().getFullYear() - trainer.career_start_year
     : trainer.experience_years;
@@ -30,14 +29,50 @@ export default function ProfileSection({ trainer, theme }) {
           paddingBottom: 'min(120%, 600px)',
           overflow: 'hidden',
           borderRadius: '10px',
-          border: `2px solid ${theme.primary}20`
+          border: `2px solid ${theme.primary}20`,
+          background: isPending ? 'rgba(255,255,255,0.02)' : 'transparent'
         }}>
-          <Image 
-            src={trainer.photo_url}
-            alt={trainer.name}
-            fill
-            style={{ objectFit: 'cover' }}
-          />
+          {isPending ? (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '20px'
+            }}>
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '50px'
+              }}>
+                ⏳
+              </div>
+              <div style={{
+                color: 'rgba(255,255,255,0.4)',
+                fontSize: '14px',
+                letterSpacing: '0.2em'
+              }}>
+                画像確認中
+              </div>
+            </div>
+          ) : (
+            <Image 
+              src={trainer.photo_url}
+              alt={trainer.name}
+              fill
+              style={{ objectFit: 'cover' }}
+            />
+          )}
         </div>
 
         <div style={{

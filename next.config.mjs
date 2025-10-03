@@ -11,13 +11,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
-<<<<<<< HEAD
-=======
       {
         protocol: 'https',
-        hostname: 'i.imgur.com',  // ← これを追加
+        hostname: 'i.imgur.com',
       },
->>>>>>> 33cd570790c7487b54a1a6a1def65b2e2202e219
+      {
+        protocol: 'https',
+        hostname: 'ymlfouinjavjahlkxixb.supabase.co',
+      },
     ],
   },
 };
