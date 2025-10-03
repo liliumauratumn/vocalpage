@@ -30,16 +30,6 @@ export default function VideoSection({ trainer, theme }) {
           boxShadow: `0 0 100px ${theme.primary}40`,
           border: `1px solid ${theme.primary}20`
         }}>
-       
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: `linear-gradient(135deg, ${theme.gradientStart}40, ${theme.gradientEnd}40)`,
-            backdropFilter: 'blur(10px)'
-          }} />
           <iframe
             src={`${trainer.youtube_url.replace('watch?v=', 'embed/')}?rel=0&modestbranding=1`}
             style={{
