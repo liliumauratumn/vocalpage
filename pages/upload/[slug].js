@@ -145,7 +145,22 @@ export default function UploadPage({ trainer }) {
         </div>
       ) : (
         <>
-          <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.5 }}>📸</div>
+          {type === 'profile' ? (
+            <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
+              <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
+              <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
+              <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
+              <text x="60" y="105" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10">プロフィール</text>
+            </svg>
+          ) : (
+            <svg width="200" height="120" viewBox="0 0 200 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
+              <rect x="10" y="10" width="180" height="100" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" rx="5" />
+              <rect x="30" y="30" width="50" height="60" fill="rgba(0,212,255,0.2)" rx="3" />
+              <text x="60" y="100" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10">全画面背景</text>
+              <circle cx="140" cy="50" r="20" fill="rgba(0,212,255,0.3)" />
+              <path d="M 115 80 Q 115 65 140 65 Q 165 65 165 80" fill="rgba(0,212,255,0.3)" />
+            </svg>
+          )}
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px' }}>
             ドラッグ&ドロップ または クリックして選択
           </p>
