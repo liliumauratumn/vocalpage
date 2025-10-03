@@ -1,0 +1,109 @@
+import Image from 'next/image'
+
+export default function ProfileSection({ trainer, theme }) {
+  return (
+    <section style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      background: '#000',
+      padding: '100px 20px'
+    }}>
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '60px',
+        alignItems: 'center'
+      }}>
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '500px',
+          paddingBottom: 'min(120%, 600px)',
+          overflow: 'hidden',
+          borderRadius: '10px',
+          border: `2px solid ${theme.primary}20`
+        }}>
+          <Image 
+            src={trainer.photo_url}
+            alt={trainer.name}
+            fill
+            style={{ objectFit: 'cover' }}
+          />
+        </div>
+
+        <div style={{
+          width: '100%',
+          maxWidth: '600px',
+          padding: '0 20px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '10px',
+            letterSpacing: '0.3em',
+            color: theme.primary,
+            marginBottom: '20px',
+            textTransform: 'uppercase'
+          }}>
+            Profile
+          </div>
+          <div style={{
+            fontSize: 'clamp(16px, 2vw, 20px)',
+            lineHeight: 1.8,
+            color: 'rgba(255,255,255,0.7)',
+            fontWeight: '300',
+            marginBottom: '40px',
+            whiteSpace: 'pre-wrap'
+          }}>
+            {trainer.bio}
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '20px',
+            flexWrap: 'wrap',
+            justifyContent: 'center'
+          }}>
+            {trainer.genres?.split(',').map((genre, i) => (
+              <span key={i} style={{
+                fontSize: '11px',
+                letterSpacing: '0.2em',
+                padding: '8px 20px',
+                border: `1px solid ${theme.primary}`,
+                borderRadius: '2px',
+                color: theme.primary,
+                textTransform: 'uppercase'
+              }}>
+                {genre.trim()}
+              </span>
+            ))}
+          </div>
+          
+          <div style={{
+            fontSize: 'clamp(60px, 10vw, 120px)',
+            fontWeight: '900',
+            color: 'transparent',
+            WebkitTextStroke: `1px ${theme.primary}`,
+            opacity: 0.3,
+            lineHeight: 1,
+            marginTop: '40px'
+          }}>
+            {trainer.experience_years}
+            <div style={{
+              fontSize: 'clamp(12px, 2vw, 16px)',
+              letterSpacing: '0.3em',
+              color: theme.primary,
+              fontWeight: '300',
+              marginTop: '10px',
+              WebkitTextStroke: '0'
+            }}>
+              YEARS EXP
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
