@@ -1,4 +1,22 @@
 export default function CTASection({ trainer, theme }) {
+  // contact_typeに応じてURLを生成
+  const getContactUrl = () => {
+    if (!trainer.contact) return '#';
+    
+    switch(trainer.contact_type) {
+      case 'email':
+        return `mailto:${trainer.contact}`;
+      case 'line':
+        return `https://line.me/ti/p/${trainer.contact}`;
+      case 'url':
+        return trainer.contact.startsWith('http') 
+          ? trainer.contact 
+          : `https://${trainer.contact}`;
+      default:
+        return `mailto:${trainer.contact}`;
+    }
+  };
+
   return (
     <section style={{
       minHeight: '100vh',
@@ -52,7 +70,7 @@ export default function CTASection({ trainer, theme }) {
         </div>
         
         <a 
-          href={trainer.contact}
+          href={getContactUrl()}
           target="_blank"
           rel="noopener noreferrer"
           style={{
