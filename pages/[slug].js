@@ -282,7 +282,7 @@ export default function TrainerPage({ trainer }) {
             </div>
           </div>
         </section>
-// プロフィールセクションの後に追加
+
   {/* 動画 */}
         {trainer.youtube_url && (
           <section style={{
