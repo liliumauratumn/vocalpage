@@ -146,9 +146,11 @@ export default function UploadPage({ trainer }) {
       ) : (
         <>
           {type === 'profile' ? (
-            <svg width="150" height="150" viewBox="0 0 150 150" style={{ marginBottom: '20px', opacity: 0.4 }}>
-              <circle cx="75" cy="75" r="60" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" strokeWidth="3" />
-              <text x="75" y="145" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">円形で表示</text>
+            <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
+              <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
+              <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
+              <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
+              <text x="60" y="105" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10">円形で表示</text>
             </svg>
           ) : (
             <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
