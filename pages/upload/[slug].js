@@ -151,9 +151,12 @@ export default function UploadPage({ trainer }) {
               <text x="75" y="145" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">円形で表示</text>
             </svg>
           ) : (
-            <svg width="240" height="140" viewBox="0 0 240 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
-              <rect x="10" y="10" width="220" height="100" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" strokeWidth="3" rx="3" />
-              <text x="120" y="130" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部全幅に表示</text>
+            <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
+              {/* ページ全体（縦長） */}
+              <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
+              {/* トップ背景エリア（横長、上部に重ねる） */}
+              <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
+              <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
             </svg>
           )}
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px' }}>
