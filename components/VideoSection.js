@@ -30,15 +30,7 @@ export default function VideoSection({ trainer, theme }) {
           boxShadow: `0 0 100px ${theme.primary}40`,
           border: `1px solid ${theme.primary}20`
         }}>
-          <Image 
-            src={trainer.full_body_image || trainer.photo_url}
-            alt="Performance"
-            fill
-            style={{
-              objectFit: 'cover',
-              opacity: 0.7
-            }}
-          />
+       
           <div style={{
             position: 'absolute',
             top: 0,
