@@ -62,7 +62,8 @@ export default function UploadPage({ trainer }) {
 
     try {
       const profileExt = profileImage.name.split('.').pop()
-      const profilePath = `${trainer.slug}-profile-${Date.now()}.${profileExt}`
+      const profilePath = `${trainer.slug}-profile.${profileExt}`
+      
       const { error: profileError } = await supabase.storage
         .from('trainer-photos')
         .upload(profilePath, profileImage, { upsert: true })
@@ -72,7 +73,8 @@ export default function UploadPage({ trainer }) {
       let heroPath = null
       if (heroImage) {
         const heroExt = heroImage.name.split('.').pop()
-        heroPath = `${trainer.slug}-hero-${Date.now()}.${heroExt}`
+        heroPath = `${trainer.slug}-hero.${heroExt}`
+        
         const { error: heroError } = await supabase.storage
           .from('trainer-photos')
           .upload(heroPath, heroImage, { upsert: true })
@@ -80,6 +82,8 @@ export default function UploadPage({ trainer }) {
         if (heroError) throw heroError
       }
 
+      const timestamp = Date.now()
+      
       const { data: profileUrl } = supabase.storage
         .from('trainer-photos')
         .getPublicUrl(profilePath)
@@ -88,11 +92,14 @@ export default function UploadPage({ trainer }) {
         .from('trainer-photos')
         .getPublicUrl(heroPath) : { data: null }
 
+      const profileUrlWithCache = `${profileUrl.publicUrl}?v=${timestamp}`
+      const heroUrlWithCache = heroUrl ? `${heroUrl.publicUrl}?v=${timestamp}` : null
+
       const { error: updateError } = await supabase
         .from('trainers')
         .update({
-          photo_url: profileUrl.publicUrl,
-          hero_image: heroUrl ? heroUrl.publicUrl : null
+          photo_url: profileUrlWithCache,
+          hero_image: heroUrlWithCache
         })
         .eq('slug', trainer.slug)
 
@@ -151,9 +158,7 @@ export default function UploadPage({ trainer }) {
             </svg>
           ) : (
             <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
-              {/* ページ全体（縦長） */}
               <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
-              {/* トップ背景エリア（横長、上部に重ねる） */}
               <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
               <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
             </svg>
