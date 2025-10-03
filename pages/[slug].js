@@ -150,7 +150,7 @@ export default function TrainerPage({ trainer }) {
               color: t.primary,
               textTransform: 'uppercase'
             }}>
-              Voice Trainer / {trainer.area}
+              Voice Trainer
             </div>
           </div>
         </section>
