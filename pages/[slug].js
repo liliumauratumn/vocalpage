@@ -8,7 +8,7 @@ import MusicSection from '../components/MusicSection'
 import ProfileSection from '../components/ProfileSection'
 import VideoSection from '../components/VideoSection'
 export default function TrainerPage({ trainer }) {
-  const [theme, setTheme] = useState('blue')
+  const [theme, setTheme] = useState(trainer.theme_color || 'blue')
   const [scrollY, setScrollY] = useState(0)
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function TrainerPage({ trainer }) {
     return <div>トレーナーが見つかりません</div>
   }
 
-  const t = themes[theme]
+  const t = getTheme[theme]
 
   return (
     <>
@@ -50,7 +50,7 @@ export default function TrainerPage({ trainer }) {
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.1)'
         }}>
-          {Object.keys(themes).map(key => (
+        {getAllThemeKeys().map(key => (
             <button
               key={key}
               onClick={() => setTheme(key)}
