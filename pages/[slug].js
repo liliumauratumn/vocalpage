@@ -283,81 +283,71 @@ export default function TrainerPage({ trainer }) {
           </div>
         </section>
 // プロフィールセクションの後に追加
+  {/* 動画 */}
+        {trainer.youtube_url && (
+          <section style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '100px 20px',
+            background: `radial-gradient(circle at center, ${t.overlay}, #000)`
+          }}>
+            <div style={{ maxWidth: '1400px', width: '100%' }}>
+              <div style={{
+                fontSize: '10px',
+                letterSpacing: '0.3em',
+                color: t.primary,
+                marginBottom: '40px',
+                textAlign: 'center',
+                textTransform: 'uppercase'
+              }}>
+                Demo Reel
+              </div>
+              <div style={{
+                position: 'relative',
+                paddingBottom: '56.25%',
+                background: '#000',
+                boxShadow: `0 0 100px ${t.primary}40`,
+                border: `1px solid ${t.primary}20`
+              }}>
+                <Image 
+                  src={trainer.full_body_image || trainer.photo_url}
+                  alt="Performance"
+                  fill
+                  style={{
+                    objectFit: 'cover',
+                    opacity: 0.7
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  background: `linear-gradient(135deg, ${t.gradientStart}40, ${t.gradientEnd}40)`,
+                  backdropFilter: 'blur(10px)'
+                }} />
+                <iframe
+                  src={`${trainer.youtube_url.replace('watch?v=', 'embed/')}?rel=0&modestbranding=1`}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    zIndex: 1
+                  }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </section>
+        )}
 
-{/* 全身写真セクション */}
-{trainer.full_body_image && (
-  <section style={{
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#000',
-    padding: '100px 20px'
-  }}>
-    <div style={{
-      maxWidth: '1400px',
-      width: '100%',
-      position: 'relative',
-      paddingBottom: '75%',
-      overflow: 'hidden',
-      border: `2px solid ${t.primary}20`
-    }}>
-      <Image 
-        src={trainer.full_body_image}
-        alt={`${trainer.name} full body`}
-        fill
-        style={{ objectFit: 'cover' }}
-      />
-    </div>
-  </section>
-)}
-
-{/* YouTube動画セクション（背景画像なし） */}
-{trainer.youtube_url && (
-  <section style={{
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '100px 20px',
-    background: `radial-gradient(circle at center, ${t.overlay}, #000)`
-  }}>
-    <div style={{ maxWidth: '1400px', width: '100%' }}>
-      <div style={{
-        fontSize: '10px',
-        letterSpacing: '0.3em',
-        color: t.primary,
-        marginBottom: '40px',
-        textAlign: 'center',
-        textTransform: 'uppercase'
-      }}>
-        Demo Reel
-      </div>
-      <div style={{
-        position: 'relative',
-        paddingBottom: '56.25%',
-        background: '#000',
-        boxShadow: `0 0 100px ${t.primary}40`,
-        border: `1px solid ${t.primary}20`
-      }}>
-        <iframe
-          src={`${trainer.youtube_url.replace('watch?v=', 'embed/')}?rel=0&modestbranding=1`}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            border: 'none'
-          }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      </div>
-    </div>
-  </section>
-)}
-      
           
 <MusicSection trainer={trainer} theme={t} />
           
