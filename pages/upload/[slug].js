@@ -150,7 +150,7 @@ export default function UploadPage({ trainer }) {
               <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
               <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
               <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
-              <text x="60" y="105" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10">円形で表示</text>
+             
             </svg>
           ) : (
             <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
