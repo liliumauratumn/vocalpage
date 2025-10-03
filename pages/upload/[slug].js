@@ -62,8 +62,7 @@ export default function UploadPage({ trainer }) {
 
     try {
       const profileExt = profileImage.name.split('.').pop()
-      const profilePath = `${trainer.slug}-profile.${profileExt}`
-      
+      const profilePath = `${trainer.slug}-profile-${Date.now()}.${profileExt}`
       const { error: profileError } = await supabase.storage
         .from('trainer-photos')
         .upload(profilePath, profileImage, { upsert: true })
@@ -73,8 +72,7 @@ export default function UploadPage({ trainer }) {
       let heroPath = null
       if (heroImage) {
         const heroExt = heroImage.name.split('.').pop()
-        heroPath = `${trainer.slug}-hero.${heroExt}`
-        
+        heroPath = `${trainer.slug}-hero-${Date.now()}.${heroExt}`
         const { error: heroError } = await supabase.storage
           .from('trainer-photos')
           .upload(heroPath, heroImage, { upsert: true })
