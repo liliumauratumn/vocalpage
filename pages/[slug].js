@@ -1,11 +1,15 @@
-// pages/[id].js
+// pages/[slug].js
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-
+import { themes, getTheme, getAllThemeKeys } from '../lib/themes'
+import CTASection from '../components/CTASection'
+import MusicSection from '../components/MusicSection'
+import ProfileSection from '../components/ProfileSection'
+import VideoSection from '../components/VideoSection'
 export default function TrainerPage({ trainer }) {
-  const [theme, setTheme] = useState('blue')
+  const [theme, setTheme] = useState(trainer.theme_color || 'blue')
   const [scrollY, setScrollY] = useState(0)
 
   useEffect(() => {
@@ -18,34 +22,7 @@ export default function TrainerPage({ trainer }) {
     return <div>トレーナーが見つかりません</div>
   }
 
-  const themes = {
-    blue: {
-      name: 'CYAN',
-      primary: '#00d4ff',
-      secondary: '#0099ff',
-      gradientStart: '#667eea',
-      gradientEnd: '#00d4ff',
-      overlay: 'rgba(0, 50, 100, 0.7)'
-    },
-    purple: {
-      name: 'VIOLET',
-      primary: '#d946ef',
-      secondary: '#a855f7',
-      gradientStart: '#8b5cf6',
-      gradientEnd: '#ec4899',
-      overlay: 'rgba(80, 0, 80, 0.7)'
-    },
-    orange: {
-      name: 'SUNSET',
-      primary: '#ff6b35',
-      secondary: '#fbbf24',
-      gradientStart: '#f59e0b',
-      gradientEnd: '#ef4444',
-      overlay: 'rgba(100, 30, 0, 0.7)'
-    }
-  }
-
-  const t = themes[theme]
+  const t = getTheme(theme) 
 
   return (
     <>
@@ -74,7 +51,7 @@ export default function TrainerPage({ trainer }) {
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.1)'
         }}>
-          {Object.keys(themes).map(key => (
+        {getAllThemeKeys().map(key => (
             <button
               key={key}
               onClick={() => setTheme(key)}
@@ -173,295 +150,22 @@ export default function TrainerPage({ trainer }) {
               color: t.primary,
               textTransform: 'uppercase'
             }}>
-              Voice Trainer / {trainer.area}
+              Voice Trainer
             </div>
           </div>
         </section>
 
-        {/* プロフィール */}
-        <section style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          background: '#000',
-          padding: '100px 20px'
-        }}>
-          <div style={{
-            maxWidth: '1400px',
-            margin: '0 auto',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '60px',
-            alignItems: 'center'
-          }}>
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              maxWidth: '500px',
-              paddingBottom: 'min(120%, 600px)',
-              overflow: 'hidden',
-              borderRadius: '10px',
-              border: `2px solid ${t.primary}20`
-            }}>
-              <Image 
-                src={trainer.photo_url}
-                alt={trainer.name}
-                fill
-                style={{ objectFit: 'cover' }}
-              />
-            </div>
+            {/* プロフィール */}      
+<ProfileSection trainer={trainer} theme={t} />
+                   {/* ビデオ */}   
+<VideoSection trainer={trainer} theme={t} />
+            {/* 配信 */}
+<MusicSection trainer={trainer} theme={t} />
+        {/* CTA */}          
+<CTASection trainer={trainer} theme={t} />
+  
 
-            <div style={{
-              width: '100%',
-              maxWidth: '600px',
-              padding: '0 20px',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '10px',
-                letterSpacing: '0.3em',
-                color: t.primary,
-                marginBottom: '20px',
-                textTransform: 'uppercase'
-              }}>
-                Profile
-              </div>
-              <div style={{
-                fontSize: 'clamp(16px, 2vw, 20px)',
-                lineHeight: 1.8,
-                color: 'rgba(255,255,255,0.7)',
-                fontWeight: '300',
-                marginBottom: '40px',
-                whiteSpace: 'pre-wrap'
-              }}>
-                {trainer.bio}
-              </div>
-              <div style={{
-                display: 'flex',
-                gap: '20px',
-                flexWrap: 'wrap',
-                justifyContent: 'center'
-              }}>
-                {trainer.genres?.split(',').map((genre, i) => (
-                  <span key={i} style={{
-                    fontSize: '11px',
-                    letterSpacing: '0.2em',
-                    padding: '8px 20px',
-                    border: `1px solid ${t.primary}`,
-                    borderRadius: '2px',
-                    color: t.primary,
-                    textTransform: 'uppercase'
-                  }}>
-                    {genre.trim()}
-                  </span>
-                ))}
-              </div>
-              
-              <div style={{
-                fontSize: 'clamp(60px, 10vw, 120px)',
-                fontWeight: '900',
-                color: 'transparent',
-                WebkitTextStroke: `1px ${t.primary}`,
-                opacity: 0.3,
-                lineHeight: 1,
-                marginTop: '40px'
-              }}>
-                {trainer.experience_years}
-                <div style={{
-                  fontSize: 'clamp(12px, 2vw, 16px)',
-                  letterSpacing: '0.3em',
-                  color: t.primary,
-                  fontWeight: '300',
-                  marginTop: '10px',
-                  WebkitTextStroke: '0'
-                }}>
-                  YEARS EXP
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 動画 */}
-        {trainer.youtube_url && (
-          <section style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '100px 20px',
-            background: `radial-gradient(circle at center, ${t.overlay}, #000)`
-          }}>
-            <div style={{ maxWidth: '1400px', width: '100%' }}>
-              <div style={{
-                fontSize: '10px',
-                letterSpacing: '0.3em',
-                color: t.primary,
-                marginBottom: '40px',
-                textAlign: 'center',
-                textTransform: 'uppercase'
-              }}>
-                Demo Reel
-              </div>
-              <div style={{
-                position: 'relative',
-                paddingBottom: '56.25%',
-                background: '#000',
-                boxShadow: `0 0 100px ${t.primary}40`,
-                border: `1px solid ${t.primary}20`
-              }}>
-                <Image 
-                  src={trainer.full_body_image || trainer.photo_url}
-                  alt="Performance"
-                  fill
-                  style={{
-                    objectFit: 'cover',
-                    opacity: 0.7
-                  }}
-                />
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  background: `linear-gradient(135deg, ${t.gradientStart}40, ${t.gradientEnd}40)`,
-                  backdropFilter: 'blur(10px)'
-                }} />
-                <iframe
-                  src={`${trainer.youtube_url.replace('watch?v=', 'embed/')}?rel=0&modestbranding=1`}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    zIndex: 1
-                  }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* 詳細 */}
-        <section style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          background: '#000',
-          padding: '100px 20px'
-        }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1px',
-              background: `${t.primary}20`
-            }}>
-              <div style={{ background: '#000', padding: '60px 40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', letterSpacing: '0.3em', color: t.primary, marginBottom: '20px', textTransform: 'uppercase' }}>Price</div>
-                <div style={{ fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: '700', color: '#fff' }}>{trainer.price}</div>
-              </div>
-              <div style={{ background: '#000', padding: '60px 40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', letterSpacing: '0.3em', color: t.primary, marginBottom: '20px', textTransform: 'uppercase' }}>Location</div>
-                <div style={{ fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: '700', color: '#fff' }}>{trainer.area}</div>
-              </div>
-              <div style={{ background: '#000', padding: '60px 40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', letterSpacing: '0.3em', color: t.primary, marginBottom: '20px', textTransform: 'uppercase' }}>Style</div>
-                <div style={{ fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: '700', color: '#fff' }}>Face / Online</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#000',
-          padding: '100px 20px'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <h2 style={{
-              fontSize: 'clamp(40px, 8vw, 100px)',
-              fontWeight: '900',
-              marginBottom: '60px',
-              color: '#fff'
-            }}>
-              LET'S TALK
-            </h2>
-            
-            <div style={{
-              display: 'flex',
-              gap: '20px',
-              justifyContent: 'center',
-              marginBottom: '40px',
-              flexWrap: 'wrap'
-            }}>
-              {[
-                { label: 'IG', url: trainer.instagram_url },
-                { label: 'X', url: trainer.twitter_url },
-                { label: 'YT', url: trainer.youtube_url },
-                { label: 'LINE', url: trainer.line_url }
-              ].filter(item => item.url).map((item, i) => (
-                <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{
-                  width: '50px',
-                  height: '50px',
-                  border: `2px solid ${t.primary}`,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: t.primary,
-                  fontSize: '11px',
-                  textDecoration: 'none',
-                  transition: 'all 0.3s',
-                  fontWeight: '600'
-                }}>
-                  {item.label}
-                </a>
-              ))}
-            </div>
-            
-            <a 
-              href={trainer.contact}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                padding: '25px 80px',
-                background: 'transparent',
-                border: `2px solid ${t.primary}`,
-                color: t.primary,
-                fontSize: '14px',
-                letterSpacing: '0.3em',
-                cursor: 'pointer',
-                transition: 'all 0.3s',
-                textTransform: 'uppercase',
-                fontWeight: '600',
-                textDecoration: 'none',
-                display: 'inline-block'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = t.primary;
-                e.target.style.color = '#000';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'transparent';
-                e.target.style.color = t.primary;
-              }}
-            >
-              Contact
-            </a>
-          </div>
-        </section>
-
+     
         {/* トップに戻る */}
         {scrollY > 300 && (
           <button
