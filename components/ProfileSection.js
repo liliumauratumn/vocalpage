@@ -109,33 +109,63 @@ export default function ProfileSection({ trainer, theme }) {
             padding: '30px',
             background: 'rgba(255,255,255,0.02)',
             borderRadius: '5px',
-            textAlign: 'left',
             fontSize: '14px',
             lineHeight: 2,
             color: 'rgba(255,255,255,0.6)',
             maxWidth: '500px'
           }}>
+            {trainer.area && (
+              <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                <span style={{ color: theme.primary, fontWeight: '600', fontSize: '12px' }}>エリア：</span>
+                <span style={{ marginLeft: '8px' }}>{trainer.area}</span>
+              </div>
+            )}
+            
             {trainer.specialties && (
-              <div style={{ marginBottom: '15px' }}>
-                <span style={{ color: theme.primary, fontWeight: '600' }}>専門分野：</span>
-                {trainer.specialties}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ color: theme.primary, fontWeight: '600', fontSize: '12px', marginBottom: '10px' }}>専門分野</div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {(Array.isArray(trainer.specialties) ? trainer.specialties : JSON.parse(trainer.specialties || '[]')).map((item, i) => (
+                    <span key={i} style={{
+                      padding: '6px 16px',
+                      background: 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${theme.primary}40`,
+                      borderRadius: '20px',
+                      fontSize: '13px'
+                    }}>
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
+            
             {trainer.lesson_types && (
-              <div style={{ marginBottom: '15px' }}>
-                <span style={{ color: theme.primary, fontWeight: '600' }}>レッスン形式：</span>
-                {trainer.lesson_types}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ color: theme.primary, fontWeight: '600', fontSize: '12px', marginBottom: '10px' }}>レッスン形式</div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {(Array.isArray(trainer.lesson_types) ? trainer.lesson_types : JSON.parse(trainer.lesson_types || '[]')).map((item, i) => (
+                    <span key={i} style={{
+                      padding: '6px 16px',
+                      background: 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${theme.primary}40`,
+                      borderRadius: '20px',
+                      fontSize: '13px'
+                    }}>
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
-            {(trainer.price || trainer.lesson_fee || trainer.price_detail) && (
-              <div>
-                <span style={{ color: theme.primary, fontWeight: '600' }}>料金：</span>
-                {trainer.price || trainer.lesson_fee}
-                {trainer.price_detail && (
-                  <div style={{ fontSize: '12px', marginTop: '5px', opacity: 0.7 }}>
-                    {trainer.price_detail}
-                  </div>
-                )}
+            
+            {(trainer.price || trainer.lesson_fee) && (
+              <div style={{ textAlign: 'center', marginTop: '25px', paddingTop: '20px', borderTop: `1px solid ${theme.primary}20` }}>
+                <span style={{ color: theme.primary, fontWeight: '600', fontSize: '12px' }}>料金：</span>
+                <span style={{ marginLeft: '8px', fontSize: '16px', fontWeight: '500' }}>
+                  {trainer.price || trainer.lesson_fee}
+                  {trainer.price_detail && <span style={{ fontSize: '12px', opacity: 0.7, marginLeft: '8px' }}>{trainer.price_detail}</span>}
+                </span>
               </div>
             )}
           </div>
