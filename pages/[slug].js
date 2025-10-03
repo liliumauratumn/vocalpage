@@ -21,7 +21,7 @@ export default function TrainerPage({ trainer }) {
     return <div>トレーナーが見つかりません</div>
   }
 
-  const t = getTheme[theme]
+  const t = getTheme(theme) 
 
   return (
     <>
