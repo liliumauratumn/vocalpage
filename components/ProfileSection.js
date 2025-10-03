@@ -169,7 +169,7 @@ export default function ProfileSection({ trainer, theme }) {
                 <span style={{ color: theme.primary, fontWeight: '600', fontSize: '12px' }}>料金：</span>
                 <span style={{ marginLeft: '8px', fontSize: '16px', fontWeight: '500' }}>
                   {trainer.price || trainer.lesson_fee}
-                  {trainer.price_detail && <span style={{ fontSize: '12px', opacity: 0.7, marginLeft: '8px' }}>{trainer.price_detail}</span>}
+                  {trainer.lesson_duration && <span style={{ fontSize: '12px', opacity: 0.7, marginLeft: '8px' }}>{trainer.lesson_duration}</span>}
                 </span>
               </div>
             )}
