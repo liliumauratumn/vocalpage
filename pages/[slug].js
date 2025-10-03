@@ -348,181 +348,29 @@ export default function TrainerPage({ trainer }) {
           </section>
         )}
 {/* 音楽リリース */}
-        {(trainer.spotify_url || trainer.apple_music_url) && (
-          <section style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            background: '#000',
-            padding: '100px 20px'
-          }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-              <div style={{
-                fontSize: '10px',
-                letterSpacing: '0.3em',
-                color: t.primary,
-                marginBottom: '60px',
-                textAlign: 'center',
-                textTransform: 'uppercase'
-              }}>
-                Music Releases
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                gap: '40px',
-                justifyContent: 'center',
-                flexWrap: 'wrap'
-              }}>
-                {trainer.spotify_url && (
-                  
-                    href={trainer.spotify_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      width: '300px',
-                      padding: '30px',
-                      border: `2px solid ${t.primary}20`,
-                      borderRadius: '10px',
-                      textAlign: 'center',
-                      textDecoration: 'none',
-                      transition: 'all 0.3s',
-                      background: '#000'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = t.primary
-                      e.currentTarget.style.transform = 'translateY(-5px)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = `${t.primary}20`
-                      e.currentTarget.style.transform = 'translateY(0)'
-                    }}
-                  >
-                    <div style={{
-                      fontSize: '12px',
-                      letterSpacing: '0.2em',
-                      color: t.primary,
-                      marginBottom: '20px',
-                      textTransform: 'uppercase'
-                    }}>
-                      Listen on
-                    </div>
-                    
-                    <div style={{
-                      fontSize: '24px',
-                      fontWeight: '700',
-                      color: '#1DB954',
-                      marginBottom: '20px'
-                    }}>
-                      Spotify
-                    </div>
-                    
-                    <div style={{
-                      padding: '12px 30px',
-                      border: `2px solid ${t.primary}`,
-                      borderRadius: '30px',
-                      color: t.primary,
-                      fontSize: '12px',
-                      letterSpacing: '0.2em',
-                      textTransform: 'uppercase',
-                      display: 'inline-block'
-                    }}>
-                      Play →
-                    </div>
-                  </a>
-                )}
-                
-                {trainer.apple_music_url && (
-                  
-                    href={trainer.apple_music_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      width: '300px',
-                      padding: '30px',
-                      border: `2px solid ${t.primary}20`,
-                      borderRadius: '10px',
-                      textAlign: 'center',
-                      textDecoration: 'none',
-                      transition: 'all 0.3s',
-                      background: '#000'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = t.primary
-                      e.currentTarget.style.transform = 'translateY(-5px)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = `${t.primary}20`
-                      e.currentTarget.style.transform = 'translateY(0)'
-                    }}
-                  >
-                    <div style={{
-                      fontSize: '12px',
-                      letterSpacing: '0.2em',
-                      color: t.primary,
-                      marginBottom: '20px',
-                      textTransform: 'uppercase'
-                    }}>
-                      Listen on
-                    </div>
-                    
-                    <div style={{
-                      fontSize: '24px',
-                      fontWeight: '700',
-                      color: '#FA243C',
-                      marginBottom: '20px'
-                    }}>
-                      Apple Music
-                    </div>
-                    
-                    <div style={{
-                      padding: '12px 30px',
-                      border: `2px solid ${t.primary}`,
-                      borderRadius: '30px',
-                      color: t.primary,
-                      fontSize: '12px',
-                      letterSpacing: '0.2em',
-                      textTransform: 'uppercase',
-                      display: 'inline-block'
-                    }}>
-                      Play →
-                    </div>
-                  </a>
-                )}
-              </div>
-            </div>
-          </section>
-        )}
-        {/* 詳細 */}
-        <section style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          background: '#000',
-          padding: '100px 20px'
-        }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1px',
-              background: `${t.primary}20`
-            }}>
-              <div style={{ background: '#000', padding: '60px 40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', letterSpacing: '0.3em', color: t.primary, marginBottom: '20px', textTransform: 'uppercase' }}>Price</div>
-                <div style={{ fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: '700', color: '#fff' }}>{trainer.price}</div>
-              </div>
-              <div style={{ background: '#000', padding: '60px 40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', letterSpacing: '0.3em', color: t.primary, marginBottom: '20px', textTransform: 'uppercase' }}>Location</div>
-                <div style={{ fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: '700', color: '#fff' }}>{trainer.area}</div>
-              </div>
-              <div style={{ background: '#000', padding: '60px 40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '10px', letterSpacing: '0.3em', color: t.primary, marginBottom: '20px', textTransform: 'uppercase' }}>Style</div>
-                <div style={{ fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: '700', color: '#fff' }}>Face / Online</div>
-              </div>
-            </div>
-          </div>
-        </section>
+{(trainer.spotify_url || trainer.apple_music_url) && (
+<section style={{minHeight:'100vh',display:'flex',alignItems:'center',background:'#000',padding:'100px 20px'}}>
+<div style={{maxWidth:'1200px',margin:'0 auto',width:'100%'}}>
+<div style={{fontSize:'10px',letterSpacing:'0.3em',color:t.primary,marginBottom:'60px',textAlign:'center',textTransform:'uppercase'}}>Music Releases</div>
+<div style={{display:'flex',gap:'40px',justifyContent:'center',flexWrap:'wrap'}}>
+{trainer.spotify_url && (
+<a href={trainer.spotify_url} target="_blank" rel="noopener noreferrer" style={{width:'300px',padding:'30px',border:`2px solid ${t.primary}20`,borderRadius:'10px',textAlign:'center',textDecoration:'none',transition:'all 0.3s',background:'#000'}} onMouseEnter={(e)=>{e.currentTarget.style.borderColor=t.primary;e.currentTarget.style.transform='translateY(-5px)';}} onMouseLeave={(e)=>{e.currentTarget.style.borderColor=`${t.primary}20`;e.currentTarget.style.transform='translateY(0)';}}>
+<div style={{fontSize:'12px',letterSpacing:'0.2em',color:t.primary,marginBottom:'20px',textTransform:'uppercase'}}>Listen on</div>
+<div style={{fontSize:'24px',fontWeight:'700',color:'#1DB954',marginBottom:'20px'}}>Spotify</div>
+<div style={{padding:'12px 30px',border:`2px solid ${t.primary}`,borderRadius:'30px',color:t.primary,fontSize:'12px',letterSpacing:'0.2em',textTransform:'uppercase',display:'inline-block'}}>Play →</div>
+</a>
+)}
+{trainer.apple_music_url && (
+<a href={trainer.apple_music_url} target="_blank" rel="noopener noreferrer" style={{width:'300px',padding:'30px',border:`2px solid ${t.primary}20`,borderRadius:'10px',textAlign:'center',textDecoration:'none',transition:'all 0.3s',background:'#000'}} onMouseEnter={(e)=>{e.currentTarget.style.borderColor=t.primary;e.currentTarget.style.transform='translateY(-5px)';}} onMouseLeave={(e)=>{e.currentTarget.style.borderColor=`${t.primary}20`;e.currentTarget.style.transform='translateY(0)';}}>
+<div style={{fontSize:'12px',letterSpacing:'0.2em',color:t.primary,marginBottom:'20px',textTransform:'uppercase'}}>Listen on</div>
+<div style={{fontSize:'24px',fontWeight:'700',color:'#FA243C',marginBottom:'20px'}}>Apple Music</div>
+<div style={{padding:'12px 30px',border:`2px solid ${t.primary}`,borderRadius:'30px',color:t.primary,fontSize:'12px',letterSpacing:'0.2em',textTransform:'uppercase',display:'inline-block'}}>Play →</div>
+</a>
+)}
+</div>
+</div>
+</section>
+)}
 
         {/* CTA */}
         <section style={{
