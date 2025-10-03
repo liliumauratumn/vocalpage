@@ -8,6 +8,7 @@ import CTASection from '../components/CTASection'
 import MusicSection from '../components/MusicSection'
 import ProfileSection from '../components/ProfileSection'
 import VideoSection from '../components/VideoSection'
+
 export default function TrainerPage({ trainer }) {
   const [theme, setTheme] = useState(trainer.theme_color || 'blue')
   const [scrollY, setScrollY] = useState(0)
@@ -22,7 +23,8 @@ export default function TrainerPage({ trainer }) {
     return <div>トレーナーが見つかりません</div>
   }
 
-  const t = getTheme(theme) 
+  const t = getTheme(theme)
+  const isPending = trainer.status === 'pending'
 
   return (
     <>
@@ -51,7 +53,7 @@ export default function TrainerPage({ trainer }) {
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.1)'
         }}>
-        {getAllThemeKeys().map(key => (
+          {getAllThemeKeys().map(key => (
             <button
               key={key}
               onClick={() => setTheme(key)}
@@ -76,49 +78,87 @@ export default function TrainerPage({ trainer }) {
           overflow: 'hidden',
           background: '#1a1a2e'
         }}>
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            transform: `scale(${1 + scrollY * 0.0005})`,
-            transition: 'transform 0.1s'
-          }}>
-            <Image 
-              src={trainer.hero_image || trainer.photo_url}
-              alt={trainer.name}
-              fill
-              style={{
-                objectFit: 'cover',
-                objectPosition: 'center',
-                opacity: 0.9
-              }}
-              priority
-            />
-          </div>
-          
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: `linear-gradient(135deg, ${t.overlay}, transparent)`,
-            mixBlendMode: 'multiply',
-            opacity: 0.5
-          }} />
+          {isPending ? (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: '20px'
+            }}>
+              <div style={{
+                width: '150px',
+                height: '150px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '60px'
+              }}>
+                ⏳
+              </div>
+              <div style={{
+                color: 'rgba(255,255,255,0.5)',
+                fontSize: '18px',
+                letterSpacing: '0.2em'
+              }}>
+                画像確認中
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                transform: `scale(${1 + scrollY * 0.0005})`,
+                transition: 'transform 0.1s'
+              }}>
+                <Image 
+                  src={trainer.hero_image || trainer.photo_url}
+                  alt={trainer.name}
+                  fill
+                  style={{
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    opacity: 0.9
+                  }}
+                  priority
+                />
+              </div>
+              
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: `linear-gradient(135deg, ${t.overlay}, transparent)`,
+                mixBlendMode: 'multiply',
+                opacity: 0.5
+              }} />
 
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: `linear-gradient(135deg, ${t.gradientStart} 0%, ${t.gradientEnd} 100%)`,
-            opacity: 0.4,
-            mixBlendMode: 'screen'
-          }} />
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: `linear-gradient(135deg, ${t.gradientStart} 0%, ${t.gradientEnd} 100%)`,
+                opacity: 0.4,
+                mixBlendMode: 'screen'
+              }} />
+            </>
+          )}
 
           <div style={{
             position: 'absolute',
@@ -127,7 +167,8 @@ export default function TrainerPage({ trainer }) {
             transform: `translate(-50%, -50%) translateY(${scrollY * 0.3}px)`,
             textAlign: 'center',
             width: '100%',
-            padding: '20px'
+            padding: '20px',
+            zIndex: 10
           }}>
             <h1 style={{
               fontSize: 'clamp(60px, 15vw, 200px)',
@@ -155,17 +196,18 @@ export default function TrainerPage({ trainer }) {
           </div>
         </section>
 
-            {/* プロフィール */}      
-<ProfileSection trainer={trainer} theme={t} />
-                   {/* ビデオ */}   
-<VideoSection trainer={trainer} theme={t} />
-            {/* 配信 */}
-<MusicSection trainer={trainer} theme={t} />
+        {/* プロフィール */}      
+        <ProfileSection trainer={trainer} theme={t} isPending={isPending} />
+        
+        {/* ビデオ */}   
+        <VideoSection trainer={trainer} theme={t} />
+        
+        {/* 配信 */}
+        <MusicSection trainer={trainer} theme={t} />
+        
         {/* CTA */}          
-<CTASection trainer={trainer} theme={t} />
-  
+        <CTASection trainer={trainer} theme={t} />
 
-     
         {/* トップに戻る */}
         {scrollY > 300 && (
           <button
