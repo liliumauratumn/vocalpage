@@ -13,7 +13,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'i.imgur.com',  // ← これを追加
+        hostname: 'i.imgur.com',
       },
     ],
   },
