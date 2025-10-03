@@ -209,7 +209,6 @@ export default function TrainerPage({ trainer }) {
   alt={trainer.name}
   fill
   style={{ objectFit: 'cover' }}
-  unoptimized
 />
             </div>
 
