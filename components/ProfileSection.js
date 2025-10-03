@@ -164,12 +164,12 @@ export default function ProfileSection({ trainer, theme }) {
               </div>
             )}
             
-            {(trainer.price || trainer.lesson_fee) && (
+            {trainer.price && (
               <div style={{ textAlign: 'center', marginTop: '25px', paddingTop: '20px', borderTop: `1px solid ${theme.primary}20` }}>
                 <span style={{ color: theme.primary, fontWeight: '600', fontSize: '12px' }}>料金：</span>
                 <span style={{ marginLeft: '8px', fontSize: '16px', fontWeight: '500' }}>
-                  {trainer.price || trainer.lesson_fee}
-                  {trainer.lesson_duration && <span style={{ fontSize: '12px', opacity: 0.7, marginLeft: '8px' }}>{trainer.lesson_duration}</span>}
+                  ¥{Number(trainer.price).toLocaleString('ja-JP')}
+                  {trainer.lesson_duration && <span style={{ fontSize: '12px', opacity: 0.7 }}> / {trainer.lesson_duration}分</span>}
                 </span>
               </div>
             )}
