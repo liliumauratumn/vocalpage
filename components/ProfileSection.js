@@ -1,6 +1,11 @@
 import Image from 'next/image'
 
 export default function ProfileSection({ trainer, theme }) {
+  // 経験年数を自動計算
+  const experienceYears = trainer.career_start_year 
+    ? new Date().getFullYear() - trainer.career_start_year
+    : trainer.experience_years;
+
   return (
     <section style={{
       minHeight: '100vh',
@@ -90,7 +95,7 @@ export default function ProfileSection({ trainer, theme }) {
             lineHeight: 1,
             marginTop: '40px'
           }}>
-            {trainer.experience_years}
+            {experienceYears}
             <div style={{
               fontSize: 'clamp(12px, 2vw, 16px)',
               letterSpacing: '0.3em',
