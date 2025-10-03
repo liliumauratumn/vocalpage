@@ -253,7 +253,7 @@ export default function UploadPage({ trainer }) {
               fontWeight: '600',
               cursor: uploading ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s',
-              animation: uploading ? 'none' : 'colorShift 3s linear infinite',
+              animation: uploading ? 'none' : 'colorShift 3s ease-in-out infinite alternate',
               position: 'relative'
             }}
           >
