@@ -4,6 +4,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
 import MusicSection from '../components/MusicSection'
+import VideoSection from '../components/VideoSection'
 export default function TrainerPage({ trainer }) {
   const [theme, setTheme] = useState('blue')
   const [scrollY, setScrollY] = useState(0)
