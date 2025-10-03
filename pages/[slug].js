@@ -204,12 +204,13 @@ export default function TrainerPage({ trainer }) {
               borderRadius: '10px',
               border: `2px solid ${t.primary}20`
             }}>
-              <Image 
-                src={trainer.photo_url}
-                alt={trainer.name}
-                fill
-                style={{ objectFit: 'cover' }}
-              />
+            <Image 
+  src={trainer.photo_url}
+  alt={trainer.name}
+  fill
+  style={{ objectFit: 'cover' }}
+  unoptimized
+/>
             </div>
 
             <div style={{
