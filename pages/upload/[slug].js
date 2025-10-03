@@ -128,24 +128,40 @@ export default function UploadPage({ trainer }) {
       const profileUrlWithCache = `${profileUrl.publicUrl}?v=${timestamp}`
       const heroUrlWithCache = heroUrl ? `${heroUrl.publicUrl}?v=${timestamp}` : null
 
+      // 画像URLを更新し、statusをpendingに戻す
       const { error: updateError } = await supabase
         .from('trainers')
         .update({
           photo_url: profileUrlWithCache,
-          hero_image: heroUrlWithCache
+          hero_image: heroUrlWithCache,
+          status: 'pending'  // 常にpendingに戻す
         })
         .eq('slug', trainer.slug)
 
       if (updateError) throw updateError
 
       const pageUrl = `${window.location.origin}/${trainer.slug}`
-      setMessage(
-        `✅ アップロード完了しました\n\n` +
-        `🌐 あなたのページURL:\n${pageUrl}\n\n` +
-        `📷 登録いただいた画像は確認中です\n` +
-        `確認完了まで1〜3営業日お待ちください\n\n` +
-        `※ページはすぐにご覧いただけます`
-      )
+      
+      // 初回登録か更新かで異なるメッセージ
+      if (wasActive) {
+        // 更新の場合
+        setMessage(
+          `✅ 画像を更新しました\n\n` +
+          `🌐 あなたのページURL:\n${pageUrl}\n\n` +
+          `📷 新しい画像は確認中です\n` +
+          `確認完了まで1〜3営業日お待ちください\n\n` +
+          `※確認完了まで前の画像が表示されます`
+        )
+      } else {
+        // 初回登録の場合
+        setMessage(
+          `✅ アップロード完了しました\n\n` +
+          `🌐 あなたのページURL:\n${pageUrl}\n\n` +
+          `📷 登録いただいた画像は確認中です\n` +
+          `確認完了まで1〜3営業日お待ちください\n\n` +
+          `※ページはすぐにご覧いただけます`
+        )
+      }
       
       setTimeout(() => {
         router.push(`/${trainer.slug}`)
@@ -317,7 +333,8 @@ export default function UploadPage({ trainer }) {
               padding: '10px',
               background: message.includes('エラー') ? 'rgba(255,0,0,0.2)' : 'rgba(0,255,0,0.2)',
               borderRadius: '5px',
-              textAlign: 'center'
+              textAlign: 'center',
+              whiteSpace: 'pre-line'
             }}>
               {message}
             </p>
