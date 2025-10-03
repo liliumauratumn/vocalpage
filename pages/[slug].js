@@ -349,7 +349,88 @@ export default function TrainerPage({ trainer }) {
           </section>
         )}
 
-
+    {/* CTA */}
+        <section style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#000',
+          padding: '100px 20px'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{
+              fontSize: 'clamp(40px, 8vw, 100px)',
+              fontWeight: '900',
+              marginBottom: '60px',
+              color: '#fff'
+            }}>
+              LET'S TALK
+            </h2>
+            
+            <div style={{
+              display: 'flex',
+              gap: '20px',
+              justifyContent: 'center',
+              marginBottom: '40px',
+              flexWrap: 'wrap'
+            }}>
+              {[
+                { label: 'IG', url: trainer.instagram_url },
+                { label: 'X', url: trainer.twitter_url },
+                { label: 'YT', url: trainer.youtube_url },
+                { label: 'LINE', url: trainer.line_url }
+              ].filter(item => item.url).map((item, i) => (
+                <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{
+                  width: '50px',
+                  height: '50px',
+                  border: `2px solid ${t.primary}`,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: t.primary,
+                  fontSize: '11px',
+                  textDecoration: 'none',
+                  transition: 'all 0.3s',
+                  fontWeight: '600'
+                }}>
+                  {item.label}
+                </a>
+              ))}
+            </div>
+            
+            <a 
+              href={trainer.contact}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                padding: '25px 80px',
+                background: 'transparent',
+                border: `2px solid ${t.primary}`,
+                color: t.primary,
+                fontSize: '14px',
+                letterSpacing: '0.3em',
+                cursor: 'pointer',
+                transition: 'all 0.3s',
+                textTransform: 'uppercase',
+                fontWeight: '600',
+                textDecoration: 'none',
+                display: 'inline-block'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = t.primary;
+                e.target.style.color = '#000';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'transparent';
+                e.target.style.color = t.primary;
+              }}
+            >
+              Contact
+            </a>
+          </div>
+        </section>
         {/* トップに戻る */}
         {scrollY > 300 && (
           <button
