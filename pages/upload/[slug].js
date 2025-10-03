@@ -150,7 +150,6 @@ export default function UploadPage({ trainer }) {
               <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
               <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
               <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
-             
             </svg>
           ) : (
             <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
@@ -245,18 +244,28 @@ export default function UploadPage({ trainer }) {
             style={{
               width: '100%',
               padding: '15px',
-              background: uploading ? '#666' : 'linear-gradient(135deg, #667eea, #764ba2)',
+              background: uploading ? '#666' : 'linear-gradient(90deg, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe, #667eea)',
+              backgroundSize: '300% 100%',
               color: '#fff',
               border: 'none',
               borderRadius: '5px',
               fontSize: '16px',
               fontWeight: '600',
               cursor: uploading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s'
+              transition: 'all 0.3s',
+              animation: uploading ? 'none' : 'colorShift 3s linear infinite',
+              position: 'relative'
             }}
           >
             {uploading ? 'アップロード中...' : 'アップロード'}
           </button>
+
+          <style jsx>{`
+            @keyframes colorShift {
+              0% { background-position: 0% 50%; }
+              100% { background-position: 100% 50%; }
+            }
+          `}</style>
 
           {message && (
             <p style={{
