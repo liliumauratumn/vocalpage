@@ -53,7 +53,7 @@ export default function UploadPage({ trainer }) {
     e.preventDefault()
     
     if (!profileImage) {
-      setMessage('プロフィール画像を選択してください')
+      setMessage('プロフィール画像は必須です')
       return
     }
 
@@ -223,7 +223,7 @@ export default function UploadPage({ trainer }) {
             }}>
               プロフィール画像（必須）
             </label>
-            <DropZone type="profile" preview={profilePreview} label="円形で表示されます" />
+            <DropZone type="profile" preview={profilePreview} label="顔写真推奨" />
           </div>
 
           <div style={{ marginBottom: '40px' }}>
