@@ -49,6 +49,25 @@ export default function UploadPage({ trainer }) {
     }
   }
 
+  const deleteOldFiles = async (slug, type) => {
+    const { data: files } = await supabase.storage
+      .from('trainer-photos')
+      .list()
+    
+    if (files) {
+      const oldFiles = files.filter(file => 
+        file.name.startsWith(`${slug}-${type}`)
+      )
+      
+      if (oldFiles.length > 0) {
+        const filePaths = oldFiles.map(file => file.name)
+        await supabase.storage
+          .from('trainer-photos')
+          .remove(filePaths)
+      }
+    }
+  }
+
   const handleUpload = async (e) => {
     e.preventDefault()
     
@@ -61,6 +80,11 @@ export default function UploadPage({ trainer }) {
     setMessage('アップロード中...')
 
     try {
+      await deleteOldFiles(trainer.slug, 'profile')
+      if (heroImage) {
+        await deleteOldFiles(trainer.slug, 'hero')
+      }
+
       const profileExt = profileImage.name.split('.').pop()
       const profilePath = `${trainer.slug}-profile.${profileExt}`
       
