@@ -24,7 +24,7 @@ export default function Home({ trainers }) {
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent'
       }}>
-        VocalPage
+        VocalPage12
       </h1>
       
       <p style={{
