@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-
+import MusicSection from '../components/MusicSection'
 export default function TrainerPage({ trainer }) {
   const [theme, setTheme] = useState('blue')
   const [scrollY, setScrollY] = useState(0)
@@ -348,7 +348,9 @@ export default function TrainerPage({ trainer }) {
             </div>
           </section>
         )}
-
+          
+<MusicSection trainer={trainer} theme={t} />
+          
     {/* CTA */}
         <section style={{
           minHeight: '100vh',
