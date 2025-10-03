@@ -1,13 +1,53 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 
 export default function UploadPage({ trainer }) {
   const router = useRouter()
   const [profileImage, setProfileImage] = useState(null)
   const [heroImage, setHeroImage] = useState(null)
+  const [profilePreview, setProfilePreview] = useState(null)
+  const [heroPreview, setHeroPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
+  const [dragActive, setDragActive] = useState({ profile: false, hero: false })
+
+  const handleFile = (file, type) => {
+    if (!file || !file.type.startsWith('image/')) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      if (type === 'profile') {
+        setProfileImage(file)
+        setProfilePreview(e.target.result)
+      } else {
+        setHeroImage(file)
+        setHeroPreview(e.target.result)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleDrag = (e, type) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive({ ...dragActive, [type]: true })
+    } else if (e.type === 'dragleave') {
+      setDragActive({ ...dragActive, [type]: false })
+    }
+  }
+
+  const handleDrop = (e, type) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive({ ...dragActive, [type]: false })
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0], type)
+    }
+  }
 
   const handleUpload = async (e) => {
     e.preventDefault()
@@ -21,7 +61,6 @@ export default function UploadPage({ trainer }) {
     setMessage('アップロード中...')
 
     try {
-      // プロフィール画像をアップロード
       const profileExt = profileImage.name.split('.').pop()
       const profilePath = `${trainer.slug}-profile.${profileExt}`
       
@@ -31,7 +70,6 @@ export default function UploadPage({ trainer }) {
 
       if (profileError) throw profileError
 
-      // ヒーロー画像をアップロード（ある場合）
       let heroPath = null
       if (heroImage) {
         const heroExt = heroImage.name.split('.').pop()
@@ -44,7 +82,6 @@ export default function UploadPage({ trainer }) {
         if (heroError) throw heroError
       }
 
-      // 公開URLを取得
       const { data: profileUrl } = supabase.storage
         .from('trainer-photos')
         .getPublicUrl(profilePath)
@@ -53,7 +90,6 @@ export default function UploadPage({ trainer }) {
         .from('trainer-photos')
         .getPublicUrl(heroPath) : { data: null }
 
-      // DBを更新
       const { error: updateError } = await supabase
         .from('trainers')
         .update({
@@ -76,6 +112,65 @@ export default function UploadPage({ trainer }) {
     }
   }
 
+  const DropZone = ({ type, preview, label }) => (
+    <div
+      onDragEnter={(e) => handleDrag(e, type)}
+      onDragLeave={(e) => handleDrag(e, type)}
+      onDragOver={(e) => handleDrag(e, type)}
+      onDrop={(e) => handleDrop(e, type)}
+      style={{
+        border: `2px dashed ${dragActive[type] ? '#00d4ff' : 'rgba(255,255,255,0.3)'}`,
+        borderRadius: '10px',
+        padding: '40px',
+        textAlign: 'center',
+        background: dragActive[type] ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.02)',
+        transition: 'all 0.3s',
+        cursor: 'pointer',
+        position: 'relative',
+        minHeight: '200px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      {preview ? (
+        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+          <Image
+            src={preview}
+            alt="Preview"
+            fill
+            style={{ objectFit: 'contain' }}
+          />
+        </div>
+      ) : (
+        <>
+          <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.5 }}>📸</div>
+          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px' }}>
+            ドラッグ&ドロップ または クリックして選択
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>
+            {label}
+          </p>
+        </>
+      )}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => handleFile(e.target.files[0], type)}
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          top: 0,
+          left: 0,
+          opacity: 0,
+          cursor: 'pointer'
+        }}
+      />
+    </div>
+  )
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -88,7 +183,7 @@ export default function UploadPage({ trainer }) {
       fontFamily: '"Inter", -apple-system, sans-serif'
     }}>
       <div style={{
-        maxWidth: '500px',
+        maxWidth: '600px',
         width: '100%',
         background: 'rgba(255,255,255,0.05)',
         padding: '40px',
@@ -103,69 +198,30 @@ export default function UploadPage({ trainer }) {
         </p>
 
         <form onSubmit={handleUpload}>
-          {/* プロフィール画像 */}
           <div style={{ marginBottom: '30px' }}>
             <label style={{
               display: 'block',
-              marginBottom: '10px',
+              marginBottom: '15px',
               color: '#00d4ff',
               fontSize: '14px',
               fontWeight: '600'
             }}>
               プロフィール画像（必須）
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setProfileImage(e.target.files[0])}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '5px',
-                color: '#fff'
-              }}
-            />
-            {profileImage && (
-              <p style={{ marginTop: '10px', fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>
-                選択中: {profileImage.name}
-              </p>
-            )}
+            <DropZone type="profile" preview={profilePreview} label="顔写真・バストアップ推奨" />
           </div>
 
-          {/* ヒーロー画像 */}
           <div style={{ marginBottom: '40px' }}>
             <label style={{
               display: 'block',
-              marginBottom: '10px',
+              marginBottom: '15px',
               color: '#00d4ff',
               fontSize: '14px',
               fontWeight: '600'
             }}>
               ヒーロー画像（任意）
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setHeroImage(e.target.files[0])}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '5px',
-                color: '#fff'
-              }}
-            />
-            <p style={{ marginTop: '5px', fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
-              未選択の場合、プロフィール画像を使用します
-            </p>
-            {heroImage && (
-              <p style={{ marginTop: '10px', fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>
-                選択中: {heroImage.name}
-              </p>
-            )}
+            <DropZone type="hero" preview={heroPreview} label="未選択の場合、プロフィール画像を使用" />
           </div>
 
           <button
@@ -180,7 +236,8 @@ export default function UploadPage({ trainer }) {
               borderRadius: '5px',
               fontSize: '16px',
               fontWeight: '600',
-              cursor: uploading ? 'not-allowed' : 'pointer'
+              cursor: uploading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s'
             }}
           >
             {uploading ? 'アップロード中...' : 'アップロード'}
