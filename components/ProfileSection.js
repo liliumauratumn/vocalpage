@@ -102,6 +102,43 @@ export default function ProfileSection({ trainer, theme }) {
               YEARS EXP
             </div>
           </div>
+
+          {/* レッスン詳細情報 */}
+          <div style={{
+            marginTop: '60px',
+            padding: '30px',
+            background: 'rgba(255,255,255,0.02)',
+            borderRadius: '5px',
+            textAlign: 'left',
+            fontSize: '14px',
+            lineHeight: 2,
+            color: 'rgba(255,255,255,0.6)',
+            maxWidth: '500px'
+          }}>
+            {trainer.specialties && (
+              <div style={{ marginBottom: '15px' }}>
+                <span style={{ color: theme.primary, fontWeight: '600' }}>専門分野：</span>
+                {trainer.specialties}
+              </div>
+            )}
+            {trainer.lesson_types && (
+              <div style={{ marginBottom: '15px' }}>
+                <span style={{ color: theme.primary, fontWeight: '600' }}>レッスン形式：</span>
+                {trainer.lesson_types}
+              </div>
+            )}
+            {(trainer.price || trainer.lesson_fee || trainer.price_detail) && (
+              <div>
+                <span style={{ color: theme.primary, fontWeight: '600' }}>料金：</span>
+                {trainer.price || trainer.lesson_fee}
+                {trainer.price_detail && (
+                  <div style={{ fontSize: '12px', marginTop: '5px', opacity: 0.7 }}>
+                    {trainer.price_detail}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>
