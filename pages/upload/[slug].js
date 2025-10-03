@@ -1,17 +1,20 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import { useRouter } from 'next/router'
 import Image from 'next/image'
+import UploadSuccess from '../../components/UploadSuccess'
 
 export default function UploadPage({ trainer }) {
-  const router = useRouter()
   const [profileImage, setProfileImage] = useState(null)
   const [heroImage, setHeroImage] = useState(null)
   const [profilePreview, setProfilePreview] = useState(null)
   const [heroPreview, setHeroPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
-  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
+  
+  // 成功画面表示用の状態
+  const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [wasUpdate, setWasUpdate] = useState(false)
 
   const handleFile = (file, type) => {
     if (!file || !file.type.startsWith('image/')) return
@@ -72,15 +75,14 @@ export default function UploadPage({ trainer }) {
     e.preventDefault()
     
     if (!profileImage) {
-      setMessage('プロフィール画像は必須です')
+      setError('プロフィール画像は必須です')
       return
     }
 
     setUploading(true)
-    setMessage('アップロード中...')
+    setError('')
 
     try {
-      // 現在のステータスを取得（更新判定用）
       const { data: currentTrainer } = await supabase
         .from('trainers')
         .select('status')
@@ -128,52 +130,41 @@ export default function UploadPage({ trainer }) {
       const profileUrlWithCache = `${profileUrl.publicUrl}?v=${timestamp}`
       const heroUrlWithCache = heroUrl ? `${heroUrl.publicUrl}?v=${timestamp}` : null
 
-      // 画像URLを更新し、statusをpendingに戻す
       const { error: updateError } = await supabase
         .from('trainers')
         .update({
           photo_url: profileUrlWithCache,
           hero_image: heroUrlWithCache,
-          status: 'pending'  // 常にpendingに戻す
+          status: 'pending'
         })
         .eq('slug', trainer.slug)
 
       if (updateError) throw updateError
 
-      const pageUrl = `${window.location.origin}/${trainer.slug}`
-      
-      // 初回登録か更新かで異なるメッセージ
-      if (wasActive) {
-        // 更新の場合
-        setMessage(
-          `✅ 画像を更新しました\n\n` +
-          `🌐 あなたのページURL:\n${pageUrl}\n\n` +
-          `📷 新しい画像は確認中です\n` +
-          `確認完了まで1〜3営業日お待ちください\n\n` +
-          `※確認完了まで前の画像が表示されます`
-        )
-      } else {
-        // 初回登録の場合
-        setMessage(
-          `✅ アップロード完了しました\n\n` +
-          `🌐 あなたのページURL:\n${pageUrl}\n\n` +
-          `📷 登録いただいた画像は確認中です\n` +
-          `確認完了まで1〜3営業日お待ちください\n\n` +
-          `※ページはすぐにご覧いただけます`
-        )
-      }
-      
-      setTimeout(() => {
-        router.push(`/${trainer.slug}`)
-      }, 5000)
+      // 成功画面を表示（自動リダイレクトなし）
+      setWasUpdate(wasActive)
+      setUploadSuccess(true)
 
     } catch (error) {
-      setMessage(`エラー: ${error.message}`)
+      setError(`エラー: ${error.message}`)
     } finally {
       setUploading(false)
     }
   }
 
+  // 成功画面を表示
+  if (uploadSuccess) {
+    const pageUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${trainer.slug}`
+    return (
+      <UploadSuccess 
+        trainerName={trainer.name}
+        pageUrl={pageUrl}
+        wasUpdate={wasUpdate}
+      />
+    )
+  }
+
+  // 既存のアップロードフォーム（そのまま）
   const DropZone = ({ type, preview, label }) => (
     <div
       onDragEnter={(e) => handleDrag(e, type)}
@@ -327,16 +318,15 @@ export default function UploadPage({ trainer }) {
             }
           `}</style>
 
-          {message && (
+          {error && (
             <p style={{
               marginTop: '20px',
               padding: '10px',
-              background: message.includes('エラー') ? 'rgba(255,0,0,0.2)' : 'rgba(0,255,0,0.2)',
+              background: 'rgba(255,0,0,0.2)',
               borderRadius: '5px',
-              textAlign: 'center',
-              whiteSpace: 'pre-line'
+              textAlign: 'center'
             }}>
-              {message}
+              {error}
             </p>
           )}
         </form>
