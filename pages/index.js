@@ -50,8 +50,8 @@ export default function Home({ trainers }) {
     />
   ) : (
     <Galaxy
-      mouseRepulsion={true}
-      mouseInteraction={true}
+      mouseRepulsion={false}
+      mouseInteraction={false}
       density={1.5}
       glowIntensity={0.5}
       saturation={0.8}
