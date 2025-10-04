@@ -1,5 +1,5 @@
 // components/UploadForm.js
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
@@ -12,6 +12,23 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [uploadComplete, setUploadComplete] = useState(false)
+
+  // Safari/Chrome対策：documentレベルでドラッグイベントをブロック
+  useEffect(() => {
+    const preventDefaults = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    // ページ全体でのドラッグ&ドロップによるファイル表示を防止
+    document.addEventListener('dragover', preventDefaults, false)
+    document.addEventListener('drop', preventDefaults, false)
+
+    return () => {
+      document.removeEventListener('dragover', preventDefaults, false)
+      document.removeEventListener('drop', preventDefaults, false)
+    }
+  }, [])
 
   // プロフィール画像用
   const onDropProfile = useCallback((acceptedFiles) => {
