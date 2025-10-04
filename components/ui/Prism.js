@@ -434,7 +434,7 @@ const Prism = ({
   <div 
     ref={containerRef} 
     style={{
-      position: 'relative',
+      position: 'static',
       width: '100%',
       height: '100%'
     }}
