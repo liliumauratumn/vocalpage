@@ -1,6 +1,6 @@
 // components/UploadForm.js
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
 
@@ -13,39 +13,6 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [error, setError] = useState('')
   const [uploadComplete, setUploadComplete] = useState(false)
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
-
-  // ページ全体のドラッグ&ドロップを防ぐ（Safari対応強化版）
-  useEffect(() => {
-    const preventDefaults = (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-
-    const preventDrop = (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      return false
-    }
-
-    // Safariのために複数のイベントをブロック
-    document.addEventListener('dragover', preventDefaults, false)
-    document.addEventListener('drop', preventDrop, false)
-    document.addEventListener('dragenter', preventDefaults, false)
-    document.addEventListener('dragleave', preventDefaults, false)
-    
-    // body要素にも設定（Safari対策）
-    document.body.addEventListener('dragover', preventDefaults, false)
-    document.body.addEventListener('drop', preventDrop, false)
-
-    return () => {
-      document.removeEventListener('dragover', preventDefaults, false)
-      document.removeEventListener('drop', preventDrop, false)
-      document.removeEventListener('dragenter', preventDefaults, false)
-      document.removeEventListener('dragleave', preventDefaults, false)
-      document.body.removeEventListener('dragover', preventDefaults, false)
-      document.body.removeEventListener('drop', preventDrop, false)
-    }
-  }, [])
 
   // 画像ファイルを処理する関数
   const handleFile = (file, type) => {
@@ -314,6 +281,7 @@ export default function UploadForm({ trainer, onSuccess }) {
           </>
         )}
         <input
+          id={`${type}-file-input`}
           type="file"
           accept="image/*"
           onChange={(e) => handleFile(e.target.files[0], type)}
@@ -325,7 +293,7 @@ export default function UploadForm({ trainer, onSuccess }) {
             left: 0,
             opacity: 0,
             cursor: 'pointer',
-            pointerEvents: 'auto'
+            pointerEvents: 'none'
           }}
         />
       </div>
@@ -334,32 +302,24 @@ export default function UploadForm({ trainer, onSuccess }) {
 
   // メインのアップロード画面
   return (
-    <div 
-      style={{
-        minHeight: '100vh',
-        background: '#000',
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        fontFamily: '"Inter", -apple-system, sans-serif'
-      }}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => e.preventDefault()}
-    >
-      <div 
-        style={{
-          maxWidth: '600px',
-          width: '100%',
-          background: 'rgba(255,255,255,0.05)',
-          padding: '40px',
-          borderRadius: '10px',
-          border: '1px solid rgba(255,255,255,0.1)'
-        }}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => e.preventDefault()}
-      >
+    <div style={{
+      minHeight: '100vh',
+      background: '#000',
+      color: '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      fontFamily: '"Inter", -apple-system, sans-serif'
+    }}>
+      <div style={{
+        maxWidth: '600px',
+        width: '100%',
+        background: 'rgba(255,255,255,0.05)',
+        padding: '40px',
+        borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.1)'
+      }}>
         <h1 style={{ fontSize: '32px', marginBottom: '10px' }}>
           画像アップロード
         </h1>
@@ -367,7 +327,7 @@ export default function UploadForm({ trainer, onSuccess }) {
           {trainer.name} 様
         </p>
 
-        <form onSubmit={handleUpload} onDragOver={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()}>
+        <form onSubmit={handleUpload}>
           <div style={{ marginBottom: '30px' }}>
             <label style={{
               display: 'block',
