@@ -86,7 +86,7 @@ export default function TrainerPage({ trainer }) {
     height: '100%',
     transform: `scale(${1 + scrollY * 0.0005})`,
     transition: 'transform 0.1s',
-    filter: isPending ? 'blur(20px)' : 'none'
+    filter: isPending ? 'blur(35px)' : 'none'
   }}>
     <Image 
       src={trainer.hero_image || trainer.photo_url}
