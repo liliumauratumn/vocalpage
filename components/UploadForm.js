@@ -1,7 +1,7 @@
 // components/UploadForm.js
-// Chrome/Safari/Firefox完全対応版
+// 元の動作していたコードに、dropEffectだけ追加
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
 
@@ -15,23 +15,25 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [uploadComplete, setUploadComplete] = useState(false)
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
 
-  // 【削除】useEffectでのページ全体のpreventDefaultは削除
-  // ドロップゾーンのイベントを妨害しないため
+  // 元のuseEffect（シンプル版）
+  useEffect(() => {
+    const preventDefaults = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
 
-  // 【強化】ファイル形式の詳細チェック
+    window.addEventListener('dragover', preventDefaults)
+    window.addEventListener('drop', preventDefaults)
+
+    return () => {
+      window.removeEventListener('dragover', preventDefaults)
+      window.removeEventListener('drop', preventDefaults)
+    }
+  }, [])
+
   const handleFile = (file, type) => {
-    if (!file) {
-      setError('ファイルが選択されていません')
-      return
-    }
-    if (!file.type.startsWith('image/') || !['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(file.type)) {
-      setError('PNG、JPEG、GIF、またはWebP形式の画像を選択してください')
-      return
-    }
-    
-    // エラーをクリア
-    setError('')
-    
+    if (!file || !file.type.startsWith('image/')) return
+
     const reader = new FileReader()
     reader.onload = (e) => {
       if (type === 'profile') {
@@ -45,15 +47,13 @@ export default function UploadForm({ trainer, onSuccess }) {
     reader.readAsDataURL(file)
   }
 
-  // 【修正】dropEffect設定 + デバッグログ
+  // これが唯一の変更：dropEffectを追加
   const handleDrag = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
     
-    console.log(`Drag event: ${e.type}, type: ${type}`)
-    
-    // Chrome/Safari必須
-    if (e.dataTransfer) {
+    // これだけ追加
+    if (e.type === 'dragover' && e.dataTransfer) {
       e.dataTransfer.dropEffect = 'copy'
     }
     
@@ -64,33 +64,26 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }
 
-  // 【修正】デバッグログ追加
   const handleDrop = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log(`Drop event: type: ${type}, files:`, e.dataTransfer.files, 'items:', e.dataTransfer.items)
-    
     setDragActive({ ...dragActive, [type]: false })
 
     let file = null
     
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+    if (e.dataTransfer.items) {
       for (let i = 0; i < e.dataTransfer.items.length; i++) {
         if (e.dataTransfer.items[i].kind === 'file') {
           file = e.dataTransfer.items[i].getAsFile()
-          console.log('Dropped file from items:', file)
           break
         }
       }
-    } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    } else if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       file = e.dataTransfer.files[0]
-      console.log('Dropped file from files:', file)
     }
 
     if (file) {
       handleFile(file, type)
-    } else {
-      setError('有効な画像ファイルを選択してください')
     }
   }
 
@@ -284,20 +277,16 @@ export default function UploadForm({ trainer, onSuccess }) {
   )
 
   return (
-    <div 
-      style={{
-        minHeight: '100vh',
-        background: '#000',
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        fontFamily: '"Inter", -apple-system, sans-serif'
-      }}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => e.preventDefault()}
-    >
+    <div style={{
+      minHeight: '100vh',
+      background: '#000',
+      color: '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      fontFamily: '"Inter", -apple-system, sans-serif'
+    }}>
       <div style={{
         maxWidth: '600px',
         width: '100%',
