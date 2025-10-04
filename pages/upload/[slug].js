@@ -200,7 +200,7 @@ export default function UploadPage({ trainer }) {
       setUploading(false)
     }
   }
-// 編集キー認証画面（追加）
+// 編集キー認証画面（このブロック全体を置き換え）
   if (!isAuthenticated) {
     return (
       <div style={{
@@ -227,7 +227,7 @@ export default function UploadPage({ trainer }) {
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{trainer.name} 様</p>
           </div>
 
-          <form onSubmit={handleVerifyKey}>
+          <form>
             <div style={{ marginBottom: '20px' }}>
               <label style={{
                 display: 'block',
@@ -284,14 +284,16 @@ export default function UploadPage({ trainer }) {
                 borderRadius: '5px',
                 color: '#ff6b6b',
                 fontSize: '13px',
-                marginBottom: '20px'
+                marginBottom: '20px',
+                textAlign: 'center'
               }}>
                 {authError}
               </div>
             )}
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleVerifyKey}
               disabled={verifying}
               style={{
                 width: '100%',
