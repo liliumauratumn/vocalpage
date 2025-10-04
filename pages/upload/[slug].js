@@ -10,9 +10,12 @@ export default function UploadPage({ trainer }) {
   const [heroPreview, setHeroPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [uploadComplete, setUploadComplete] = useState(false)
-  const [wasUpdate, setWasUpdate] = useState(false)
-  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
+  
+  // 成功画面表示用の状態
+  const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [wasUpdate, setWasUpdate] = useState(false)
 
   const handleFile = (file, type) => {
     if (!file || !file.type.startsWith('image/')) return
@@ -73,12 +76,12 @@ export default function UploadPage({ trainer }) {
     e.preventDefault()
     
     if (!profileImage) {
-      setMessage('プロフィール画像は必須です')
+      setError('プロフィール画像は必須です')
       return
     }
 
     setUploading(true)
-    setMessage('アップロード中...')
+    setError('')
 
     try {
       const { data: currentTrainer } = await supabase
@@ -87,8 +90,7 @@ export default function UploadPage({ trainer }) {
         .eq('slug', trainer.slug)
         .single()
       
-      const isUpdate = currentTrainer?.status === 'active'
-      setWasUpdate(isUpdate)
+      const wasActive = currentTrainer?.status === 'active'
 
       await deleteOldFiles(trainer.slug, 'profile')
       if (heroImage) {
@@ -140,20 +142,28 @@ export default function UploadPage({ trainer }) {
 
       if (updateError) throw updateError
 
+      // アップロード成功（ボタンを緑に変更して2秒間表示）
+      setUploading(false)
       setUploadComplete(true)
+      
+      // 2秒後に成功画面を表示
+      setTimeout(() => {
+        setWasUpdate(wasActive)
+        setUploadSuccess(true)
+      }, 2000)
 
     } catch (error) {
-      setMessage(`エラー: ${error.message}`)
-    } finally {
+      setError(`エラー: ${error.message}`)
       setUploading(false)
     }
   }
 
-  if (uploadComplete) {
-    const pageUrl = `${window.location.origin}/${trainer.slug}`
+  // 成功画面を表示
+  if (uploadSuccess) {
+    const pageUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${trainer.slug}`
     return (
       <UploadSuccess 
-        trainerName={trainer.name} 
+        trainerName={trainer.name}
         pageUrl={pageUrl}
         themeColor={trainer.theme_color || 'blue'}
         wasUpdate={wasUpdate}
@@ -287,23 +297,27 @@ export default function UploadPage({ trainer }) {
 
           <button
             type="submit"
-            disabled={uploading}
+            disabled={uploading || uploadComplete}
             style={{
               width: '100%',
               padding: '15px',
-              background: uploading ? '#666' : 'linear-gradient(90deg, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe, #667eea)',
+              background: uploadComplete 
+                ? '#4caf50' 
+                : uploading 
+                  ? '#666' 
+                  : 'linear-gradient(90deg, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe, #667eea)',
               backgroundSize: '300% 100%',
               color: '#fff',
               border: 'none',
               borderRadius: '5px',
               fontSize: '16px',
               fontWeight: '600',
-              cursor: uploading ? 'not-allowed' : 'pointer',
+              cursor: (uploading || uploadComplete) ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s',
-              animation: uploading ? 'none' : 'colorShift 3s ease-in-out infinite alternate'
+              animation: (uploading || uploadComplete) ? 'none' : 'colorShift 3s ease-in-out infinite alternate'
             }}
           >
-            {uploading ? 'アップロード中...' : 'アップロード'}
+            {uploadComplete ? '✅ アップロード成功！' : uploading ? 'アップロード中...' : 'アップロード'}
           </button>
 
           <style jsx>{`
@@ -313,15 +327,15 @@ export default function UploadPage({ trainer }) {
             }
           `}</style>
 
-          {message && (
+          {error && (
             <p style={{
               marginTop: '20px',
               padding: '10px',
-              background: message.includes('エラー') ? 'rgba(255,0,0,0.2)' : 'rgba(0,255,0,0.2)',
+              background: 'rgba(255,0,0,0.2)',
               borderRadius: '5px',
               textAlign: 'center'
             }}>
-              {message}
+              {error}
             </p>
           )}
         </form>
