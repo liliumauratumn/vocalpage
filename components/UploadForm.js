@@ -1,4 +1,5 @@
 // components/UploadForm.js
+// Safari D&D完全対応版
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
@@ -14,23 +15,32 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [uploadComplete, setUploadComplete] = useState(false)
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
 
-  // Safari対応：ページ全体でファイルが開くのを防ぐ
+  // 【修正1】Safari完全対応：ページ全体でファイルが開くのを強力に防ぐ
   useEffect(() => {
     const preventDefaults = (e) => {
       e.preventDefault()
       e.stopPropagation()
     }
 
-    window.addEventListener('dragover', preventDefaults)
-    window.addEventListener('drop', preventDefaults)
+    // すべてのドラッグイベントを防ぐ
+    const events = ['dragenter', 'dragover', 'dragleave', 'drop']
+    
+    // window, document, bodyすべてに設定（Safari対策）
+    events.forEach(eventName => {
+      window.addEventListener(eventName, preventDefaults, true) // キャプチャフェーズで処理
+      document.addEventListener(eventName, preventDefaults, true)
+      document.body.addEventListener(eventName, preventDefaults, true)
+    })
 
     return () => {
-      window.removeEventListener('dragover', preventDefaults)
-      window.removeEventListener('drop', preventDefaults)
+      events.forEach(eventName => {
+        window.removeEventListener(eventName, preventDefaults, true)
+        document.removeEventListener(eventName, preventDefaults, true)
+        document.body.removeEventListener(eventName, preventDefaults, true)
+      })
     }
   }, [])
 
-  // 画像ファイルを処理する関数
   const handleFile = (file, type) => {
     if (!file || !file.type.startsWith('image/')) return
 
@@ -47,57 +57,42 @@ export default function UploadForm({ trainer, onSuccess }) {
     reader.readAsDataURL(file)
   }
 
-  // ドラッグ操作を処理する関数（Safari完全対応版）
+  // 【修正2】Safari対応：イベント処理を簡素化
   const handleDrag = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
-    
-    // Safari対応：dropEffectを明示的に設定
-    if (e.dataTransfer) {
-      e.dataTransfer.dropEffect = 'copy'
-    }
     
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive({ ...dragActive, [type]: true })
     } else if (e.type === 'dragleave') {
       setDragActive({ ...dragActive, [type]: false })
     }
-    
-    return false
   }
 
-  // ドロップを処理する関数（Safari完全対応版）
   const handleDrop = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive({ ...dragActive, [type]: false })
 
-    // Safari対応：dataTransfer.itemsを優先的に使用
     let file = null
     
+    // Safari対応：dataTransfer.itemsを優先的に使用
     if (e.dataTransfer.items) {
-      // itemsが使える場合（Safari推奨）
       for (let i = 0; i < e.dataTransfer.items.length; i++) {
         if (e.dataTransfer.items[i].kind === 'file') {
           file = e.dataTransfer.items[i].getAsFile()
           break
         }
       }
-    } else {
-      // フォールバック：filesプロパティを使用
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        file = e.dataTransfer.files[0]
-      }
+    } else if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      file = e.dataTransfer.files[0]
     }
 
     if (file) {
       handleFile(file, type)
     }
-    
-    return false
   }
 
-  // 古いファイルを削除する関数
   const deleteOldFiles = async (slug, type) => {
     const { data: files } = await supabase.storage
       .from('trainer-photos')
@@ -117,7 +112,6 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }
 
-  // アップロードを実行する関数
   const handleUpload = async (e) => {
     e.preventDefault()
     
@@ -130,7 +124,6 @@ export default function UploadForm({ trainer, onSuccess }) {
     setError('')
 
     try {
-      // レート制限チェック
       const limitCheck = await fetch('/api/check-upload-limit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
@@ -144,7 +137,6 @@ export default function UploadForm({ trainer, onSuccess }) {
         return
       }
 
-      // 現在のステータスを取得
       const { data: currentTrainer } = await supabase
         .from('trainers')
         .select('status')
@@ -153,13 +145,11 @@ export default function UploadForm({ trainer, onSuccess }) {
       
       const wasActive = currentTrainer?.status === 'active'
 
-      // 古いファイルを削除
       await deleteOldFiles(trainer.slug, 'profile')
       if (heroImage) {
         await deleteOldFiles(trainer.slug, 'hero')
       }
 
-      // プロフィール画像をアップロード
       const profileExt = profileImage.name.split('.').pop()
       const profilePath = `${trainer.slug}-profile.${profileExt}`
       
@@ -169,7 +159,6 @@ export default function UploadForm({ trainer, onSuccess }) {
 
       if (profileError) throw profileError
 
-      // ヒーロー画像をアップロード（ある場合）
       let heroPath = null
       if (heroImage) {
         const heroExt = heroImage.name.split('.').pop()
@@ -182,7 +171,6 @@ export default function UploadForm({ trainer, onSuccess }) {
         if (heroError) throw heroError
       }
 
-      // URLを取得（キャッシュバスティング付き）
       const timestamp = Date.now()
       
       const { data: profileUrl } = supabase.storage
@@ -196,7 +184,6 @@ export default function UploadForm({ trainer, onSuccess }) {
       const profileUrlWithCache = `${profileUrl.publicUrl}?v=${timestamp}`
       const heroUrlWithCache = heroUrl ? `${heroUrl.publicUrl}?v=${timestamp}` : null
 
-      // データベースを更新
       const { error: updateError } = await supabase
         .from('trainers')
         .update({
@@ -211,7 +198,6 @@ export default function UploadForm({ trainer, onSuccess }) {
       setUploading(false)
       setUploadComplete(true)
       
-      // 2秒後に成功画面へ
       setTimeout(() => {
         onSuccess(wasActive)
       }, 2000)
@@ -222,101 +208,79 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }
 
-  // ドロップゾーンコンポーネント（Safari対応強化版）
-  const DropZone = ({ type, preview, label }) => {
-    // Safari対応：ドロップゾーン内のイベントハンドラー
-    const handleZoneDragOver = (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      if (e.dataTransfer) {
-        e.dataTransfer.dropEffect = 'copy'
-      }
-      handleDrag(e, type)
-    }
-
-    const handleZoneDrop = (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      handleDrop(e, type)
-    }
-
-    return (
-      <div
-        onDragEnter={(e) => handleDrag(e, type)}
-        onDragLeave={(e) => handleDrag(e, type)}
-        onDragOver={handleZoneDragOver}
-        onDrop={handleZoneDrop}
+  // 【修正3】DropZone：クリック領域の改善
+  const DropZone = ({ type, preview, label }) => (
+    <div
+      onDragEnter={(e) => handleDrag(e, type)}
+      onDragLeave={(e) => handleDrag(e, type)}
+      onDragOver={(e) => handleDrag(e, type)}
+      onDrop={(e) => handleDrop(e, type)}
+      onClick={() => document.getElementById(`${type}-file-input`).click()}
+      style={{
+        border: `2px dashed ${dragActive[type] ? '#00d4ff' : 'rgba(255,255,255,0.3)'}`,
+        borderRadius: '10px',
+        padding: '40px',
+        textAlign: 'center',
+        background: dragActive[type] ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.02)',
+        transition: 'all 0.3s',
+        cursor: 'pointer',
+        position: 'relative',
+        minHeight: '200px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      {preview ? (
+        <div style={{ position: 'relative', width: '100%', height: '200px', pointerEvents: 'none' }}>
+          <Image
+            src={preview}
+            alt="Preview"
+            fill
+            style={{ objectFit: 'contain' }}
+          />
+        </div>
+      ) : (
+        <>
+          {type === 'profile' ? (
+            <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4, pointerEvents: 'none' }}>
+              <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
+              <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
+              <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
+            </svg>
+          ) : (
+            <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4, pointerEvents: 'none' }}>
+              <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
+              <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
+              <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
+            </svg>
+          )}
+          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px', pointerEvents: 'none' }}>
+            ドラッグ&ドロップ または クリックして選択
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', pointerEvents: 'none' }}>
+            {label}
+          </p>
+        </>
+      )}
+      <input
+        id={`${type}-file-input`}
+        type="file"
+        accept="image/*"
+        onChange={(e) => handleFile(e.target.files[0], type)}
         style={{
-          border: `2px dashed ${dragActive[type] ? '#00d4ff' : 'rgba(255,255,255,0.3)'}`,
-          borderRadius: '10px',
-          padding: '40px',
-          textAlign: 'center',
-          background: dragActive[type] ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.02)',
-          transition: 'all 0.3s',
-          cursor: 'pointer',
-          position: 'relative',
-          minHeight: '200px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'auto',
-          userSelect: 'none'
+          position: 'absolute',
+          width: '0.1px',
+          height: '0.1px',
+          opacity: 0,
+          overflow: 'hidden',
+          zIndex: -1
         }}
-      >
-        {preview ? (
-          <div style={{ position: 'relative', width: '100%', height: '200px', pointerEvents: 'none', userSelect: 'none' }}>
-            <Image
-              src={preview}
-              alt="Preview"
-              fill
-              style={{ objectFit: 'contain' }}
-            />
-          </div>
-        ) : (
-          <>
-            {type === 'profile' ? (
-              <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
-                <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
-                <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
-                <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
-              </svg>
-            ) : (
-              <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
-                <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
-                <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
-                <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
-              </svg>
-            )}
-            <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px' }}>
-              ドラッグ&ドロップ または クリックして選択
-            </p>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-              {label}
-            </p>
-          </>
-        )}
-        <input
-          id={`${type}-file-input`}
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleFile(e.target.files[0], type)}
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            top: 0,
-            left: 0,
-            opacity: 0,
-            cursor: 'pointer',
-            pointerEvents: 'none'
-          }}
-        />
-      </div>
-    )
-  }
+      />
+    </div>
+  )
 
-  // メインのアップロード画面
   return (
     <div style={{
       minHeight: '100vh',
