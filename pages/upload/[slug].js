@@ -123,7 +123,7 @@ export default function UploadPage({ trainer }) {
     const limitData = await limitCheck.json()
 
     if (!limitCheck.ok) {
-      setMessage(limitData.error)
+     setError(limitData.error)
       setUploading(false)
       return
     }
