@@ -6,7 +6,7 @@ export default function Document() {
     <Html lang="ja">
       <Head>
         {/* faviconの指定を追加 */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64x64.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
       </Head>
       <body>
