@@ -73,7 +73,7 @@ export default function Home({ trainers }) {
         fontFamily: '"Inter", -apple-system, sans-serif'
       }}>
         <div style={{
-          height: '180px',
+          height: '250px',
           width: '80vw',
           maxWidth: '1200px',
           marginBottom: '20px'
