@@ -1,7 +1,6 @@
 // components/UploadForm.js
-// 元の動作していたコードに、dropEffectだけ追加
-
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
+import { useDropzone } from 'react-dropzone'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
 
@@ -13,79 +12,42 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [uploadComplete, setUploadComplete] = useState(false)
-  const [dragActive, setDragActive] = useState({ profile: false, hero: false })
 
-  // 元のuseEffect（シンプル版）
-  useEffect(() => {
-    const preventDefaults = (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-
-    window.addEventListener('dragover', preventDefaults)
-    window.addEventListener('drop', preventDefaults)
-
-    return () => {
-      window.removeEventListener('dragover', preventDefaults)
-      window.removeEventListener('drop', preventDefaults)
+  const onDropProfile = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0]
+    if (file) {
+      setProfileImage(file)
+      const reader = new FileReader()
+      reader.onload = (e) => setProfilePreview(e.target.result)
+      reader.readAsDataURL(file)
+      setError('')
     }
   }, [])
 
-  const handleFile = (file, type) => {
-    if (!file || !file.type.startsWith('image/')) return
-
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      if (type === 'profile') {
-        setProfileImage(file)
-        setProfilePreview(e.target.result)
-      } else {
-        setHeroImage(file)
-        setHeroPreview(e.target.result)
-      }
-    }
-    reader.readAsDataURL(file)
-  }
-
-  // これが唯一の変更：dropEffectを追加
-  const handleDrag = (e, type) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    // これだけ追加
-    if (e.type === 'dragover' && e.dataTransfer) {
-      e.dataTransfer.dropEffect = 'copy'
-    }
-    
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive({ ...dragActive, [type]: true })
-    } else if (e.type === 'dragleave') {
-      setDragActive({ ...dragActive, [type]: false })
-    }
-  }
-
-  const handleDrop = (e, type) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive({ ...dragActive, [type]: false })
-
-    let file = null
-    
-    if (e.dataTransfer.items) {
-      for (let i = 0; i < e.dataTransfer.items.length; i++) {
-        if (e.dataTransfer.items[i].kind === 'file') {
-          file = e.dataTransfer.items[i].getAsFile()
-          break
-        }
-      }
-    } else if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      file = e.dataTransfer.files[0]
-    }
-
+  const onDropHero = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0]
     if (file) {
-      handleFile(file, type)
+      setHeroImage(file)
+      const reader = new FileReader()
+      reader.onload = (e) => setHeroPreview(e.target.result)
+      reader.readAsDataURL(file)
+      setError('')
     }
-  }
+  }, [])
+
+  const profileDropzone = useDropzone({
+    onDrop: onDropProfile,
+    accept: { 'image/*': [] },
+    maxFiles: 1,
+    multiple: false
+  })
+
+  const heroDropzone = useDropzone({
+    onDrop: onDropHero,
+    accept: { 'image/*': [] },
+    maxFiles: 1,
+    multiple: false
+  })
 
   const deleteOldFiles = async (slug, type) => {
     const { data: files } = await supabase.storage
@@ -202,19 +164,15 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }
 
-  const DropZone = ({ type, preview, label }) => (
+  const DropZone = ({ dropzone, preview, label, type }) => (
     <div
-      onDragEnter={(e) => handleDrag(e, type)}
-      onDragLeave={(e) => handleDrag(e, type)}
-      onDragOver={(e) => handleDrag(e, type)}
-      onDrop={(e) => handleDrop(e, type)}
-      onClick={() => document.getElementById(`${type}-file-input`).click()}
+      {...dropzone.getRootProps()}
       style={{
-        border: `2px dashed ${dragActive[type] ? '#00d4ff' : 'rgba(255,255,255,0.3)'}`,
+        border: `2px dashed ${dropzone.isDragActive ? '#00d4ff' : 'rgba(255,255,255,0.3)'}`,
         borderRadius: '10px',
         padding: '40px',
         textAlign: 'center',
-        background: dragActive[type] ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.02)',
+        background: dropzone.isDragActive ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.02)',
         transition: 'all 0.3s',
         cursor: 'pointer',
         position: 'relative',
@@ -225,8 +183,9 @@ export default function UploadForm({ trainer, onSuccess }) {
         justifyContent: 'center'
       }}
     >
+      <input {...dropzone.getInputProps()} />
       {preview ? (
-        <div style={{ position: 'relative', width: '100%', height: '200px', pointerEvents: 'none' }}>
+        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
           <Image
             src={preview}
             alt="Preview"
@@ -237,42 +196,26 @@ export default function UploadForm({ trainer, onSuccess }) {
       ) : (
         <>
           {type === 'profile' ? (
-            <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4, pointerEvents: 'none' }}>
+            <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
               <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
               <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
               <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
             </svg>
           ) : (
-            <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4, pointerEvents: 'none' }}>
+            <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
               <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
               <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
               <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
             </svg>
           )}
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px', pointerEvents: 'none' }}>
+          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px' }}>
             ドラッグ&ドロップ または クリックして選択
           </p>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', pointerEvents: 'none' }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
             {label}
           </p>
         </>
       )}
-      <input
-        id={`${type}-file-input`}
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleFile(e.target.files[0], type)}
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          top: 0,
-          left: 0,
-          opacity: 0,
-          cursor: 'pointer',
-          pointerEvents: 'none'
-        }}
-      />
     </div>
   )
 
@@ -313,7 +256,7 @@ export default function UploadForm({ trainer, onSuccess }) {
             }}>
               プロフィール画像（必須）
             </label>
-            <DropZone type="profile" preview={profilePreview} label="顔写真推奨" />
+            <DropZone dropzone={profileDropzone} preview={profilePreview} label="顔写真推奨" type="profile" />
           </div>
 
           <div style={{ marginBottom: '40px' }}>
@@ -326,7 +269,7 @@ export default function UploadForm({ trainer, onSuccess }) {
             }}>
               トップ背景画像（任意）
             </label>
-            <DropZone type="hero" preview={heroPreview} label="未選択の場合、プロフィール画像を使用" />
+            <DropZone dropzone={heroDropzone} preview={heroPreview} label="未選択の場合、プロフィール画像を使用" type="hero" />
           </div>
 
           <button
