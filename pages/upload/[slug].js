@@ -303,7 +303,9 @@ export default function UploadPage({ trainer }) {
                 borderRadius: '5px',
                 fontSize: '16px',
                 fontWeight: '600',
-                cursor: verifying ? 'not-allowed' : 'pointer'
+                cursor: verifying ? 'not-allowed' : 'pointer',
+                WebkitTapHighlightColor: 'transparent',  // ← 追加
+  touchAction: 'manipulation'      
               }}
             >
               {verifying ? '確認中...' : '認証する'}
