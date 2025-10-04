@@ -114,6 +114,19 @@ export default function UploadPage({ trainer }) {
     setError('')
 
     try {
+    // レート制限チェック
+    const limitCheck = await fetch('/api/check-upload-limit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    const limitData = await limitCheck.json()
+
+    if (!limitCheck.ok) {
+      setMessage(limitData.error)
+      setUploading(false)
+      return
+    }
       const { data: currentTrainer } = await supabase
         .from('trainers')
         .select('status')
@@ -213,13 +226,26 @@ export default function UploadPage({ trainer }) {
             <h1 style={{ fontSize: '24px', marginBottom: '10px' }}>編集キー認証</h1>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{trainer.name} 様</p>
           </div>
-{trainer.edit_key_hint && (
+
+          <form onSubmit={handleVerifyKey}>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '10px',
+                color: '#00d4ff',
+                fontSize: '13px',
+                textAlign: 'center'
+              }}>
+                編集キーを入力してください
+              </label>
+              {trainer.edit_key_hint && (
             <div style={{
               padding: '12px 20px',
               background: 'rgba(255,193,7,0.1)',
               border: '1px solid rgba(255,193,7,0.3)',
               borderRadius: '8px',
               marginTop: '20px',
+              marginBottom: '20px',
               textAlign: 'center'
             }}>
               <div style={{ fontSize: '11px', color: 'rgba(255,193,7,0.8)', marginBottom: '5px', letterSpacing: '0.1em' }}>
@@ -230,32 +256,22 @@ export default function UploadPage({ trainer }) {
               </div>
             </div>
           )}
-          <form onSubmit={handleVerifyKey}>
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '10px',
-                color: '#00d4ff',
-                fontSize: '13px'
-                textAlign: 'center'
-              }}>
-                編集キーを入力してください
-              </label>
               <input
                 type="text"
                 value={editKey}
                 onChange={(e) => setEditKey(e.target.value)}
                 placeholder="登録時に設定したキーワード"
                 required
-                style={{
+        style={{
                   width: '100%',
-                  padding: '12px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '5px',
+                  padding: '15px',
+                  background: 'transparent',
+                  border: '2px solid #00d4ff',
+                  borderRadius: '8px',
                   color: '#fff',
-                  fontSize: '15px'
-                  textAlign: 'center'
+                  fontSize: '16px',
+                  textAlign: 'center',
+                  outline: 'none'
                 }}
               />
             </div>
