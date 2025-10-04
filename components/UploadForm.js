@@ -1,6 +1,6 @@
 // components/UploadForm.js
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
 
@@ -13,6 +13,23 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [error, setError] = useState('')
   const [uploadComplete, setUploadComplete] = useState(false)
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
+
+  // ページ全体のドラッグ&ドロップを防ぐ
+  useEffect(() => {
+    const preventDefaults = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    // ページ全体でドロップを防ぐ
+    window.addEventListener('dragover', preventDefaults)
+    window.addEventListener('drop', preventDefaults)
+
+    return () => {
+      window.removeEventListener('dragover', preventDefaults)
+      window.removeEventListener('drop', preventDefaults)
+    }
+  }, [])
 
   // 画像ファイルを処理する関数
   const handleFile = (file, type) => {
@@ -35,11 +52,14 @@ export default function UploadForm({ trainer, onSuccess }) {
   const handleDrag = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
+    
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive({ ...dragActive, [type]: true })
     } else if (e.type === 'dragleave') {
       setDragActive({ ...dragActive, [type]: false })
     }
+    
+    return false
   }
 
   // ドロップを処理する関数
@@ -48,9 +68,13 @@ export default function UploadForm({ trainer, onSuccess }) {
     e.stopPropagation()
     setDragActive({ ...dragActive, [type]: false })
 
+    // ファイルが存在するか確認
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0], type)
     }
+    
+    // 念のためデフォルト動作を完全に防ぐ
+    return false
   }
 
   // 古いファイルを削除する関数
