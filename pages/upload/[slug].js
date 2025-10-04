@@ -1,3 +1,4 @@
+// pages/upload/[slug].js
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
@@ -9,6 +10,7 @@ export default function UploadPage({ trainer }) {
   const [profilePreview, setProfilePreview] = useState(null)
   const [heroPreview, setHeroPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadComplete, setUploadComplete] = useState(false)
   const [error, setError] = useState('')
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
   
@@ -141,13 +143,18 @@ export default function UploadPage({ trainer }) {
 
       if (updateError) throw updateError
 
-      // 成功画面を表示（自動リダイレクトなし）
-      setWasUpdate(wasActive)
-      setUploadSuccess(true)
+      // アップロード成功（ボタンを緑に変更して2秒間表示）
+      setUploading(false)
+      setUploadComplete(true)
+      
+      // 2秒後に成功画面を表示
+      setTimeout(() => {
+        setWasUpdate(wasActive)
+        setUploadSuccess(true)
+      }, 2000)
 
     } catch (error) {
       setError(`エラー: ${error.message}`)
-    } finally {
       setUploading(false)
     }
   }
@@ -291,24 +298,28 @@ export default function UploadPage({ trainer }) {
 
           <button
             type="submit"
-            disabled={uploading}
+            disabled={uploading || uploadComplete}
             style={{
               width: '100%',
               padding: '15px',
-              background: uploading ? '#666' : 'linear-gradient(90deg, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe, #667eea)',
+              background: uploadComplete 
+                ? '#4caf50' 
+                : uploading 
+                  ? '#666' 
+                  : 'linear-gradient(90deg, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe, #667eea)',
               backgroundSize: '300% 100%',
               color: '#fff',
               border: 'none',
               borderRadius: '5px',
               fontSize: '16px',
               fontWeight: '600',
-              cursor: uploading ? 'not-allowed' : 'pointer',
+              cursor: (uploading || uploadComplete) ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s',
-              animation: uploading ? 'none' : 'colorShift 3s ease-in-out infinite alternate',
+              animation: (uploading || uploadComplete) ? 'none' : 'colorShift 3s ease-in-out infinite alternate',
               position: 'relative'
             }}
           >
-            {uploading ? 'アップロード中...' : 'アップロード'}
+            {uploadComplete ? '✅ アップロード成功！' : uploading ? 'アップロード中...' : 'アップロード'}
           </button>
 
           <style jsx>{`
