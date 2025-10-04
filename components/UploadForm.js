@@ -14,20 +14,36 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [uploadComplete, setUploadComplete] = useState(false)
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
 
-  // ページ全体のドラッグ&ドロップを防ぐ
+  // ページ全体のドラッグ&ドロップを防ぐ（Safari対応強化版）
   useEffect(() => {
     const preventDefaults = (e) => {
       e.preventDefault()
       e.stopPropagation()
     }
 
-    // ページ全体でドロップを防ぐ
-    window.addEventListener('dragover', preventDefaults)
-    window.addEventListener('drop', preventDefaults)
+    const preventDrop = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      return false
+    }
+
+    // Safariのために複数のイベントをブロック
+    document.addEventListener('dragover', preventDefaults, false)
+    document.addEventListener('drop', preventDrop, false)
+    document.addEventListener('dragenter', preventDefaults, false)
+    document.addEventListener('dragleave', preventDefaults, false)
+    
+    // body要素にも設定（Safari対策）
+    document.body.addEventListener('dragover', preventDefaults, false)
+    document.body.addEventListener('drop', preventDrop, false)
 
     return () => {
-      window.removeEventListener('dragover', preventDefaults)
-      window.removeEventListener('drop', preventDefaults)
+      document.removeEventListener('dragover', preventDefaults, false)
+      document.removeEventListener('drop', preventDrop, false)
+      document.removeEventListener('dragenter', preventDefaults, false)
+      document.removeEventListener('dragleave', preventDefaults, false)
+      document.body.removeEventListener('dragover', preventDefaults, false)
+      document.body.removeEventListener('drop', preventDrop, false)
     }
   }, [])
 
@@ -48,10 +64,15 @@ export default function UploadForm({ trainer, onSuccess }) {
     reader.readAsDataURL(file)
   }
 
-  // ドラッグ操作を処理する関数
+  // ドラッグ操作を処理する関数（Safari完全対応版）
   const handleDrag = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    // Safari対応：dropEffectを明示的に設定
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy'
+    }
     
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive({ ...dragActive, [type]: true })
@@ -62,18 +83,34 @@ export default function UploadForm({ trainer, onSuccess }) {
     return false
   }
 
-  // ドロップを処理する関数
+  // ドロップを処理する関数（Safari完全対応版）
   const handleDrop = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive({ ...dragActive, [type]: false })
 
-    // ファイルが存在するか確認
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0], type)
+    // Safari対応：dataTransfer.itemsを優先的に使用
+    let file = null
+    
+    if (e.dataTransfer.items) {
+      // itemsが使える場合（Safari推奨）
+      for (let i = 0; i < e.dataTransfer.items.length; i++) {
+        if (e.dataTransfer.items[i].kind === 'file') {
+          file = e.dataTransfer.items[i].getAsFile()
+          break
+        }
+      }
+    } else {
+      // フォールバック：filesプロパティを使用
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        file = e.dataTransfer.files[0]
+      }
+    }
+
+    if (file) {
+      handleFile(file, type)
     }
     
-    // 念のためデフォルト動作を完全に防ぐ
     return false
   }
 
@@ -202,98 +239,127 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }
 
-  // ドロップゾーンコンポーネント
-  const DropZone = ({ type, preview, label }) => (
-    <div
-      onDragEnter={(e) => handleDrag(e, type)}
-      onDragLeave={(e) => handleDrag(e, type)}
-      onDragOver={(e) => handleDrag(e, type)}
-      onDrop={(e) => handleDrop(e, type)}
-      style={{
-        border: `2px dashed ${dragActive[type] ? '#00d4ff' : 'rgba(255,255,255,0.3)'}`,
-        borderRadius: '10px',
-        padding: '40px',
-        textAlign: 'center',
-        background: dragActive[type] ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.02)',
-        transition: 'all 0.3s',
-        cursor: 'pointer',
-        position: 'relative',
-        minHeight: '200px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
-      {preview ? (
-        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-          <Image
-            src={preview}
-            alt="Preview"
-            fill
-            style={{ objectFit: 'contain' }}
-          />
-        </div>
-      ) : (
-        <>
-          {type === 'profile' ? (
-            <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
-              <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
-              <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
-              <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
-            </svg>
-          ) : (
-            <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
-              <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
-              <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
-              <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
-            </svg>
-          )}
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px' }}>
-            ドラッグ&ドロップ または クリックして選択
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-            {label}
-          </p>
-        </>
-      )}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => handleFile(e.target.files[0], type)}
+  // ドロップゾーンコンポーネント（Safari対応強化版）
+  const DropZone = ({ type, preview, label }) => {
+    // Safari対応：ドロップゾーン内のイベントハンドラー
+    const handleZoneDragOver = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'copy'
+      }
+      handleDrag(e, type)
+    }
+
+    const handleZoneDrop = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      handleDrop(e, type)
+    }
+
+    return (
+      <div
+        onDragEnter={(e) => handleDrag(e, type)}
+        onDragLeave={(e) => handleDrag(e, type)}
+        onDragOver={handleZoneDragOver}
+        onDrop={handleZoneDrop}
         style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          top: 0,
-          left: 0,
-          opacity: 0,
-          cursor: 'pointer'
+          border: `2px dashed ${dragActive[type] ? '#00d4ff' : 'rgba(255,255,255,0.3)'}`,
+          borderRadius: '10px',
+          padding: '40px',
+          textAlign: 'center',
+          background: dragActive[type] ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.02)',
+          transition: 'all 0.3s',
+          cursor: 'pointer',
+          position: 'relative',
+          minHeight: '200px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'auto',
+          userSelect: 'none'
         }}
-      />
-    </div>
-  )
+      >
+        {preview ? (
+          <div style={{ position: 'relative', width: '100%', height: '200px', pointerEvents: 'none', userSelect: 'none' }}>
+            <Image
+              src={preview}
+              alt="Preview"
+              fill
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
+        ) : (
+          <>
+            {type === 'profile' ? (
+              <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
+                <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
+                <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
+                <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
+              </svg>
+            ) : (
+              <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
+                <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
+                <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
+                <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
+              </svg>
+            )}
+            <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px' }}>
+              ドラッグ&ドロップ または クリックして選択
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
+              {label}
+            </p>
+          </>
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => handleFile(e.target.files[0], type)}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            top: 0,
+            left: 0,
+            opacity: 0,
+            cursor: 'pointer',
+            pointerEvents: 'auto'
+          }}
+        />
+      </div>
+    )
+  }
 
   // メインのアップロード画面
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#000',
-      color: '#fff',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      fontFamily: '"Inter", -apple-system, sans-serif'
-    }}>
-      <div style={{
-        maxWidth: '600px',
-        width: '100%',
-        background: 'rgba(255,255,255,0.05)',
-        padding: '40px',
-        borderRadius: '10px',
-        border: '1px solid rgba(255,255,255,0.1)'
-      }}>
+    <div 
+      style={{
+        minHeight: '100vh',
+        background: '#000',
+        color: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        fontFamily: '"Inter", -apple-system, sans-serif'
+      }}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => e.preventDefault()}
+    >
+      <div 
+        style={{
+          maxWidth: '600px',
+          width: '100%',
+          background: 'rgba(255,255,255,0.05)',
+          padding: '40px',
+          borderRadius: '10px',
+          border: '1px solid rgba(255,255,255,0.1)'
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => e.preventDefault()}
+      >
         <h1 style={{ fontSize: '32px', marginBottom: '10px' }}>
           画像アップロード
         </h1>
@@ -301,7 +367,7 @@ export default function UploadForm({ trainer, onSuccess }) {
           {trainer.name} 様
         </p>
 
-        <form onSubmit={handleUpload}>
+        <form onSubmit={handleUpload} onDragOver={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()}>
           <div style={{ marginBottom: '30px' }}>
             <label style={{
               display: 'block',
