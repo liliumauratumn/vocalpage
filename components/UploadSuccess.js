@@ -1,9 +1,8 @@
+// components/UploadSuccess.js
 import { useState } from 'react'
 
-export default function UploadSuccessScreen() {
+export default function UploadSuccess({ trainerName, pageUrl, wasUpdate }) {
   const [copied, setCopied] = useState(false)
-  const pageUrl = 'https://vocalpage.net/yamada'
-  const trainerName = '山田太郎'
   
   const handleCopy = () => {
     navigator.clipboard.writeText(pageUrl)
@@ -96,7 +95,7 @@ export default function UploadSuccessScreen() {
           marginBottom: '15px',
           animation: 'fadeInUp 0.6s ease-out 0.2s backwards'
         }}>
-          🎉 ページが完成しました！
+          {wasUpdate ? '🎉 画像を更新しました！' : '🎉 ページが完成しました！'}
         </h1>
 
         <p style={{
@@ -194,7 +193,10 @@ export default function UploadSuccessScreen() {
             📷 <strong>画像は確認中です</strong>
           </p>
           <p style={{ fontSize: '13px', color: '#888', lineHeight: '1.6' }}>
-            登録いただいた画像は1〜3営業日以内に確認し、承認されると表示されます。ページ自体はすぐにご覧いただけます。
+            {wasUpdate 
+              ? '新しい画像は3〜7営業日以内に確認し、承認されると表示されます。確認完了まで前の画像が表示されます。'
+              : '登録いただいた画像は3〜7営業日以内に確認し、承認されると表示されます。ページ自体はすぐにご覧いただけます。'
+            }
           </p>
         </div>
 
@@ -301,7 +303,7 @@ export default function UploadSuccessScreen() {
           color: '#999',
           animation: 'fadeInUp 0.6s ease-out 0.7s backwards'
         }}>
-          ページの編集は <a href={`/upload/yamada`} style={{ color: '#667eea', textDecoration: 'none' }}>こちら</a> からいつでも可能です
+          ページの編集はこのページからいつでも可能です
         </p>
       </div>
 
