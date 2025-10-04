@@ -40,7 +40,7 @@ export default function ProfileSection({ trainer, theme, isPending }) {
                 fill
                 style={{ 
                   objectFit: 'cover',
-                  filter: 'blur(40px)'
+                  filter: 'blur(35px)'
                 }}
               />
               
