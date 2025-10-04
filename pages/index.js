@@ -8,13 +8,23 @@ import { useState, useEffect } from 'react'
 export default function Home({ trainers }) {
 
   const [backgroundType, setBackgroundType] = useState(null)
+   const [isMobile, setIsMobile] = useState(false)
   
   useEffect(() => {
     // 0か1をランダムに選択（50%ずつ）
     const random = Math.random() < 0.5 ? 'prism' : 'galaxy'
     setBackgroundType(random)
   }, [])
-  
+   // モバイル判定
+    setIsMobile(window.innerWidth <= 768)
+    
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    window.addEventListener('resize', handleResize)
+    
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
   // まだ背景が決まっていない場合は何も表示しない
   if (!backgroundType) {
     return <div style={{ minHeight: '100vh', background: '#000' }} />
@@ -77,6 +87,7 @@ export default function Home({ trainers }) {
           width: '80vw',
           maxWidth: '1200px',
           marginBottom: '20px'
+           marginTop: isMobile ? '80px' : '0'  // ← ここが追加
         }}>
           <TextPressure
             text="VocalPage"
