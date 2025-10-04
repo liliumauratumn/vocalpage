@@ -84,6 +84,8 @@ export default function UploadPage({ trainer }) {
   try {
     const response = await fetch('/api/verify-edit-key', {
       method: 'POST',
+      mode: 'cors',
+  credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ slug: trainer.slug, editKey: editKey })
     })
