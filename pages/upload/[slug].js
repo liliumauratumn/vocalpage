@@ -77,31 +77,30 @@ export default function UploadPage({ trainer }) {
     }
   }
 // 編集キー認証関数（追加）
-  const handleVerifyKey = async (e) => {
-    e.preventDefault()
-    setVerifying(true)
-    setAuthError('')
+ const handleVerifyKey = async () => {
+  setVerifying(true)
+  setAuthError('')
 
-    try {
-      const response = await fetch('/api/verify-edit-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: trainer.slug, editKey: editKey })
-      })
+  try {
+    const response = await fetch('/api/verify-edit-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: trainer.slug, editKey: editKey })
+    })
 
-      const data = await response.json()
+    const data = await response.json()
 
-      if (response.ok) {
-        setIsAuthenticated(true)
-      } else {
-        setAuthError(data.error || '認証に失敗しました')
-      }
-    } catch (error) {
-      setAuthError('エラーが発生しました')
-    } finally {
-      setVerifying(false)
+    if (response.ok) {
+      setIsAuthenticated(true)
+    } else {
+      setAuthError(data.error || '認証に失敗しました')
     }
+  } catch (error) {
+    setAuthError('エラーが発生しました')
+  } finally {
+    setVerifying(false)
   }
+}
   const handleUpload = async (e) => {
     e.preventDefault()
     
