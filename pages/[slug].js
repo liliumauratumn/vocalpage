@@ -72,129 +72,134 @@ export default function TrainerPage({ trainer }) {
         </div>
 
         {/* ヒーロー */}
-        <section style={{
-          height: '100vh',
-          position: 'relative',
-          overflow: 'hidden',
-          background: '#1a1a2e'
-        }}>
-          {isPending ? (
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              gap: '20px'
-            }}>
-              <div style={{
-                width: '150px',
-                height: '150px',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '60px'
-              }}>
-                ⏳
-              </div>
-              <div style={{
-                color: 'rgba(255,255,255,0.5)',
-                fontSize: '18px',
-                letterSpacing: '0.2em'
-              }}>
-                画像確認中
-              </div>
-            </div>
-          ) : (
-            <>
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                transform: `scale(${1 + scrollY * 0.0005})`,
-                transition: 'transform 0.1s'
-              }}>
-                <Image 
-                  src={trainer.hero_image || trainer.photo_url}
-                  alt={trainer.name}
-                  fill
-                  style={{
-                    objectFit: 'cover',
-                    objectPosition: 'center',
-                    opacity: 0.9
-                  }}
-                  priority
-                />
-              </div>
-              
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: `linear-gradient(135deg, ${t.overlay}, transparent)`,
-                mixBlendMode: 'multiply',
-                opacity: 0.5
-              }} />
+       <section style={{
+  height: '100vh',
+  position: 'relative',
+  overflow: 'hidden',
+  background: '#1a1a2e'
+}}>
+  <div style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    transform: `scale(${1 + scrollY * 0.0005})`,
+    transition: 'transform 0.1s',
+    filter: isPending ? 'blur(20px)' : 'none'
+  }}>
+    <Image 
+      src={trainer.hero_image || trainer.photo_url}
+      alt={trainer.name}
+      fill
+      style={{
+        objectFit: 'cover',
+        objectPosition: 'center',
+        opacity: 0.9
+      }}
+      priority
+    />
+  </div>
+  
+  <div style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(135deg, ${t.overlay}, transparent)`,
+    mixBlendMode: 'multiply',
+    opacity: 0.5
+  }} />
 
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: `linear-gradient(135deg, ${t.gradientStart} 0%, ${t.gradientEnd} 100%)`,
-                opacity: 0.4,
-                mixBlendMode: 'screen'
-              }} />
-            </>
-          )}
+  <div style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(135deg, ${t.gradientStart} 0%, ${t.gradientEnd} 100%)`,
+    opacity: 0.4,
+    mixBlendMode: 'screen'
+  }} />
 
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: `translate(-50%, -50%) translateY(${scrollY * 0.3}px)`,
-            textAlign: 'center',
-            width: '100%',
-            padding: '20px',
-            zIndex: 10
-          }}>
-            <h1 style={{
-              fontSize: 'clamp(60px, 15vw, 200px)',
-              fontWeight: '900',
-              letterSpacing: '-0.05em',
-              margin: 0,
-              lineHeight: 0.9,
-              textTransform: 'uppercase',
-              background: `linear-gradient(135deg, #fff 0%, ${t.primary} 100%)`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>
-              {trainer.name.split(' ')[1] || trainer.name}
-            </h1>
-            <div style={{
-              marginTop: '20px',
-              fontSize: 'clamp(12px, 2vw, 18px)',
-              letterSpacing: '0.5em',
-              fontWeight: '300',
-              color: t.primary,
-              textTransform: 'uppercase'
-            }}>
-              Voice Trainer
-            </div>
-          </div>
-        </section>
+  {isPending && (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      gap: '15px',
+      zIndex: 5
+    }}>
+      <div style={{
+        width: '80px',
+        height: '80px',
+        borderRadius: '50%',
+        background: 'rgba(255,255,255,0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '40px',
+        backdropFilter: 'blur(10px)'
+      }}>
+        ⏳
+      </div>
+      <div style={{
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: '14px',
+        letterSpacing: '0.2em',
+        background: 'rgba(0,0,0,0.3)',
+        padding: '10px 20px',
+        borderRadius: '20px',
+        backdropFilter: 'blur(10px)'
+      }}>
+        画像確認中
+      </div>
+    </div>
+  )}
+
+  <div style={{
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: `translate(-50%, -50%) translateY(${scrollY * 0.3}px)`,
+    textAlign: 'center',
+    width: '100%',
+    padding: '20px',
+    zIndex: 10
+  }}>
+    <h1 style={{
+      fontSize: 'clamp(60px, 15vw, 200px)',
+      fontWeight: '900',
+      letterSpacing: '-0.05em',
+      margin: 0,
+      lineHeight: 0.9,
+      textTransform: 'uppercase',
+      background: `linear-gradient(135deg, #fff 0%, ${t.primary} 100%)`,
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
+    }}>
+      {trainer.name.split(' ')[1] || trainer.name}
+    </h1>
+    <div style={{
+      marginTop: '20px',
+      fontSize: 'clamp(12px, 2vw, 18px)',
+      letterSpacing: '0.5em',
+      fontWeight: '300',
+      color: t.primary,
+      textTransform: 'uppercase'
+    }}>
+      Voice Trainer
+    </div>
+  </div>
+</section>
 
         {/* プロフィール */}      
         <ProfileSection trainer={trainer} theme={t} isPending={isPending} />
