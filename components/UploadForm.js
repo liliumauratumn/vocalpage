@@ -17,10 +17,10 @@ export default function UploadForm({ trainer, onSuccess }) {
     const file = acceptedFiles[0]
     if (file) {
       setProfileImage(file)
+      setError('')
       const reader = new FileReader()
       reader.onload = (e) => setProfilePreview(e.target.result)
       reader.readAsDataURL(file)
-      setError('')
     }
   }, [])
 
@@ -28,23 +28,61 @@ export default function UploadForm({ trainer, onSuccess }) {
     const file = acceptedFiles[0]
     if (file) {
       setHeroImage(file)
+      setError('')
       const reader = new FileReader()
       reader.onload = (e) => setHeroPreview(e.target.result)
       reader.readAsDataURL(file)
-      setError('')
     }
+  }, [])
+
+  const onDropRejectedProfile = useCallback((rejectedFiles) => {
+    rejectedFiles.forEach(({ file, errors }) => {
+      errors.forEach(({ code }) => {
+        if (code === 'file-too-large') {
+          setError(`${file.name} のファイルサイズが大きすぎます。5MB以下の画像を選択してください。`)
+        } else if (code === 'file-invalid-type') {
+          setError(`${file.name} は画像ファイルではありません。PNG、JPEG、GIF、WebPを選択してください。`)
+        }
+      })
+    })
+  }, [])
+
+  const onDropRejectedHero = useCallback((rejectedFiles) => {
+    rejectedFiles.forEach(({ file, errors }) => {
+      errors.forEach(({ code }) => {
+        if (code === 'file-too-large') {
+          setError(`${file.name} のファイルサイズが大きすぎます。5MB以下の画像を選択してください。`)
+        } else if (code === 'file-invalid-type') {
+          setError(`${file.name} は画像ファイルではありません。PNG、JPEG、GIF、WebPを選択してください。`)
+        }
+      })
+    })
   }, [])
 
   const profileDropzone = useDropzone({
     onDrop: onDropProfile,
-    accept: { 'image/*': [] },
+    onDropRejected: onDropRejectedProfile,
+    accept: {
+      'image/jpeg': [],
+      'image/png': [],
+      'image/gif': [],
+      'image/webp': []
+    },
+    maxSize: 5 * 1024 * 1024, // 5MB
     maxFiles: 1,
     multiple: false
   })
 
   const heroDropzone = useDropzone({
     onDrop: onDropHero,
-    accept: { 'image/*': [] },
+    onDropRejected: onDropRejectedHero,
+    accept: {
+      'image/jpeg': [],
+      'image/png': [],
+      'image/gif': [],
+      'image/webp': []
+    },
+    maxSize: 5 * 1024 * 1024, // 5MB
     maxFiles: 1,
     multiple: false
   })
@@ -164,60 +202,80 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }
 
-  const DropZone = ({ dropzone, preview, label, type }) => (
-    <div
-      {...dropzone.getRootProps()}
-      style={{
-        border: `2px dashed ${dropzone.isDragActive ? '#00d4ff' : 'rgba(255,255,255,0.3)'}`,
-        borderRadius: '10px',
-        padding: '40px',
-        textAlign: 'center',
-        background: dropzone.isDragActive ? 'rgba(0,212,255,0.1)' : 'rgba(255,255,255,0.02)',
-        transition: 'all 0.3s',
-        cursor: 'pointer',
-        position: 'relative',
-        minHeight: '200px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
-      <input {...dropzone.getInputProps()} />
-      {preview ? (
-        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
-          <Image
-            src={preview}
-            alt="Preview"
-            fill
-            style={{ objectFit: 'contain' }}
-          />
-        </div>
-      ) : (
-        <>
-          {type === 'profile' ? (
-            <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
-              <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
-              <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
-              <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
-            </svg>
-          ) : (
-            <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
-              <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
-              <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
-              <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
-            </svg>
-          )}
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px' }}>
-            ドラッグ&ドロップ または クリックして選択
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-            {label}
-          </p>
-        </>
-      )}
-    </div>
-  )
+  const DropZone = ({ dropzone, preview, label, type }) => {
+    const getBorderColor = () => {
+      if (dropzone.isDragReject) return '#ff6b6b'
+      if (dropzone.isDragAccept) return '#4caf50'
+      if (dropzone.isDragActive) return '#00d4ff'
+      return 'rgba(255,255,255,0.3)'
+    }
+
+    const getBackgroundColor = () => {
+      if (dropzone.isDragReject) return 'rgba(255,107,107,0.1)'
+      if (dropzone.isDragAccept) return 'rgba(76,175,80,0.1)'
+      if (dropzone.isDragActive) return 'rgba(0,212,255,0.1)'
+      return 'rgba(255,255,255,0.02)'
+    }
+
+    return (
+      <div
+        {...dropzone.getRootProps()}
+        style={{
+          border: `2px dashed ${getBorderColor()}`,
+          borderRadius: '10px',
+          padding: '40px',
+          textAlign: 'center',
+          background: getBackgroundColor(),
+          transition: 'all 0.3s',
+          cursor: 'pointer',
+          position: 'relative',
+          minHeight: '200px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <input {...dropzone.getInputProps()} />
+        {preview ? (
+          <div style={{ position: 'relative', width: '100%', height: '200px' }}>
+            <Image
+              src={preview}
+              alt="Preview"
+              fill
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
+        ) : (
+          <>
+            {type === 'profile' ? (
+              <svg width="120" height="120" viewBox="0 0 120 120" style={{ marginBottom: '20px', opacity: 0.4 }}>
+                <circle cx="60" cy="60" r="55" fill="none" stroke="#00d4ff" strokeWidth="2" strokeDasharray="5,5" />
+                <circle cx="60" cy="45" r="15" fill="rgba(0,212,255,0.3)" />
+                <path d="M 35 85 Q 35 65 60 65 Q 85 65 85 85" fill="rgba(0,212,255,0.3)" />
+              </svg>
+            ) : (
+              <svg width="200" height="140" viewBox="0 0 200 140" style={{ marginBottom: '20px', opacity: 0.4 }}>
+                <rect x="40" y="10" width="120" height="100" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" strokeWidth="1" rx="3" />
+                <rect x="40" y="10" width="120" height="35" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" strokeWidth="2" rx="3" />
+                <text x="100" y="125" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">ページ上部に表示</text>
+              </svg>
+            )}
+            <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '10px', fontSize: '15px' }}>
+              {dropzone.isDragReject 
+                ? 'このファイル形式は使用できません' 
+                : dropzone.isDragAccept 
+                  ? 'ドロップしてアップロード' 
+                  : 'ドラッグ&ドロップ または クリックして選択'}
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
+              {label}
+            </p>
+          </>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div style={{
@@ -256,7 +314,7 @@ export default function UploadForm({ trainer, onSuccess }) {
             }}>
               プロフィール画像（必須）
             </label>
-            <DropZone dropzone={profileDropzone} preview={profilePreview} label="顔写真推奨" type="profile" />
+            <DropZone dropzone={profileDropzone} preview={profilePreview} label="顔写真推奨（5MB以下）" type="profile" />
           </div>
 
           <div style={{ marginBottom: '40px' }}>
@@ -269,7 +327,7 @@ export default function UploadForm({ trainer, onSuccess }) {
             }}>
               トップ背景画像（任意）
             </label>
-            <DropZone dropzone={heroDropzone} preview={heroPreview} label="未選択の場合、プロフィール画像を使用" type="hero" />
+            <DropZone dropzone={heroDropzone} preview={heroPreview} label="未選択の場合、プロフィール画像を使用（5MB以下）" type="hero" />
           </div>
 
           <button
