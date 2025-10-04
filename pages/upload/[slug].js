@@ -213,7 +213,22 @@ export default function UploadPage({ trainer }) {
             <h1 style={{ fontSize: '24px', marginBottom: '10px' }}>編集キー認証</h1>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{trainer.name} 様</p>
           </div>
-
+{trainer.edit_key_hint && (
+            <div style={{
+              padding: '12px 20px',
+              background: 'rgba(255,193,7,0.1)',
+              border: '1px solid rgba(255,193,7,0.3)',
+              borderRadius: '8px',
+              marginTop: '20px'
+            }}>
+              <div style={{ fontSize: '11px', color: 'rgba(255,193,7,0.8)', marginBottom: '5px', letterSpacing: '0.1em' }}>
+                💡 ヒント
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px' }}>
+                {trainer.edit_key_hint}
+              </div>
+            </div>
+          )}
           <form onSubmit={handleVerifyKey}>
             <div style={{ marginBottom: '20px' }}>
               <label style={{
@@ -467,7 +482,7 @@ export default function UploadPage({ trainer }) {
 export async function getServerSideProps({ params }) {
   const { data: trainer } = await supabase
     .from('trainers')
-    .select('slug, name, theme_color')
+    .select('slug, name, theme_color, edit_key_hint')
     .eq('slug', params.slug)
     .single()
 
