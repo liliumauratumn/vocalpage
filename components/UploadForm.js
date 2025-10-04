@@ -1,7 +1,7 @@
 // components/UploadForm.js
-// Safari D&D完全対応版
+// Chrome/Safari/Firefox完全対応版
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
 
@@ -15,35 +15,23 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [uploadComplete, setUploadComplete] = useState(false)
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
 
-  // 【修正1】Safari完全対応：ページ全体でファイルが開くのを強力に防ぐ
-  useEffect(() => {
-    const preventDefaults = (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-    }
+  // 【削除】useEffectでのページ全体のpreventDefaultは削除
+  // ドロップゾーンのイベントを妨害しないため
 
-    // すべてのドラッグイベントを防ぐ
-    const events = ['dragenter', 'dragover', 'dragleave', 'drop']
-    
-    // window, document, bodyすべてに設定（Safari対策）
-    events.forEach(eventName => {
-      window.addEventListener(eventName, preventDefaults, true) // キャプチャフェーズで処理
-      document.addEventListener(eventName, preventDefaults, true)
-      document.body.addEventListener(eventName, preventDefaults, true)
-    })
-
-    return () => {
-      events.forEach(eventName => {
-        window.removeEventListener(eventName, preventDefaults, true)
-        document.removeEventListener(eventName, preventDefaults, true)
-        document.body.removeEventListener(eventName, preventDefaults, true)
-      })
-    }
-  }, [])
-
+  // 【強化】ファイル形式の詳細チェック
   const handleFile = (file, type) => {
-    if (!file || !file.type.startsWith('image/')) return
-
+    if (!file) {
+      setError('ファイルが選択されていません')
+      return
+    }
+    if (!file.type.startsWith('image/') || !['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(file.type)) {
+      setError('PNG、JPEG、GIF、またはWebP形式の画像を選択してください')
+      return
+    }
+    
+    // エラーをクリア
+    setError('')
+    
     const reader = new FileReader()
     reader.onload = (e) => {
       if (type === 'profile') {
@@ -57,10 +45,17 @@ export default function UploadForm({ trainer, onSuccess }) {
     reader.readAsDataURL(file)
   }
 
-  // 【修正2】Safari対応：イベント処理を簡素化
+  // 【修正】dropEffect設定 + デバッグログ
   const handleDrag = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    console.log(`Drag event: ${e.type}, type: ${type}`)
+    
+    // Chrome/Safari必須
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy'
+    }
     
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive({ ...dragActive, [type]: true })
@@ -69,27 +64,33 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }
 
+  // 【修正】デバッグログ追加
   const handleDrop = (e, type) => {
     e.preventDefault()
     e.stopPropagation()
+    console.log(`Drop event: type: ${type}, files:`, e.dataTransfer.files, 'items:', e.dataTransfer.items)
+    
     setDragActive({ ...dragActive, [type]: false })
 
     let file = null
     
-    // Safari対応：dataTransfer.itemsを優先的に使用
-    if (e.dataTransfer.items) {
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
       for (let i = 0; i < e.dataTransfer.items.length; i++) {
         if (e.dataTransfer.items[i].kind === 'file') {
           file = e.dataTransfer.items[i].getAsFile()
+          console.log('Dropped file from items:', file)
           break
         }
       }
-    } else if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       file = e.dataTransfer.files[0]
+      console.log('Dropped file from files:', file)
     }
 
     if (file) {
       handleFile(file, type)
+    } else {
+      setError('有効な画像ファイルを選択してください')
     }
   }
 
@@ -208,7 +209,6 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }
 
-  // 【修正3】DropZone：クリック領域の改善
   const DropZone = ({ type, preview, label }) => (
     <div
       onDragEnter={(e) => handleDrag(e, type)}
@@ -271,27 +271,33 @@ export default function UploadForm({ trainer, onSuccess }) {
         onChange={(e) => handleFile(e.target.files[0], type)}
         style={{
           position: 'absolute',
-          width: '0.1px',
-          height: '0.1px',
+          width: '100%',
+          height: '100%',
+          top: 0,
+          left: 0,
           opacity: 0,
-          overflow: 'hidden',
-          zIndex: -1
+          cursor: 'pointer',
+          pointerEvents: 'none'
         }}
       />
     </div>
   )
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#000',
-      color: '#fff',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      fontFamily: '"Inter", -apple-system, sans-serif'
-    }}>
+    <div 
+      style={{
+        minHeight: '100vh',
+        background: '#000',
+        color: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        fontFamily: '"Inter", -apple-system, sans-serif'
+      }}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => e.preventDefault()}
+    >
       <div style={{
         maxWidth: '600px',
         width: '100%',
@@ -356,7 +362,7 @@ export default function UploadForm({ trainer, onSuccess }) {
               animation: (uploading || uploadComplete) ? 'none' : 'colorShift 3s ease-in-out infinite alternate'
             }}
           >
-            {uploadComplete ? '✅ アップロード成功！' : uploading ? 'アップロード中...' : 'アップロード'}
+            {uploadComplete ? '✅ アップロード成功!' : uploading ? 'アップロード中...' : 'アップロード'}
           </button>
 
           <style jsx>{`
