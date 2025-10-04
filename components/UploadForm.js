@@ -13,6 +13,7 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [error, setError] = useState('')
   const [uploadComplete, setUploadComplete] = useState(false)
 
+  // プロフィール画像用
   const onDropProfile = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0]
     if (file) {
@@ -24,30 +25,7 @@ export default function UploadForm({ trainer, onSuccess }) {
     }
   }, [])
 
-  const onDropHero = useCallback((acceptedFiles) => {
-    const file = acceptedFiles[0]
-    if (file) {
-      setHeroImage(file)
-      setError('')
-      const reader = new FileReader()
-      reader.onload = (e) => setHeroPreview(e.target.result)
-      reader.readAsDataURL(file)
-    }
-  }, [])
-
   const onDropRejectedProfile = useCallback((rejectedFiles) => {
-    rejectedFiles.forEach(({ file, errors }) => {
-      errors.forEach(({ code }) => {
-        if (code === 'file-too-large') {
-          setError(`${file.name} のファイルサイズが大きすぎます。5MB以下の画像を選択してください。`)
-        } else if (code === 'file-invalid-type') {
-          setError(`${file.name} は画像ファイルではありません。PNG、JPEG、GIF、WebPを選択してください。`)
-        }
-      })
-    })
-  }, [])
-
-  const onDropRejectedHero = useCallback((rejectedFiles) => {
     rejectedFiles.forEach(({ file, errors }) => {
       errors.forEach(({ code }) => {
         if (code === 'file-too-large') {
@@ -68,10 +46,36 @@ export default function UploadForm({ trainer, onSuccess }) {
       'image/gif': [],
       'image/webp': []
     },
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 5 * 1024 * 1024,
     maxFiles: 1,
-    multiple: false
+    multiple: false,
+    noClick: false,
+    noKeyboard: false
   })
+
+  // ヒーロー画像用
+  const onDropHero = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0]
+    if (file) {
+      setHeroImage(file)
+      setError('')
+      const reader = new FileReader()
+      reader.onload = (e) => setHeroPreview(e.target.result)
+      reader.readAsDataURL(file)
+    }
+  }, [])
+
+  const onDropRejectedHero = useCallback((rejectedFiles) => {
+    rejectedFiles.forEach(({ file, errors }) => {
+      errors.forEach(({ code }) => {
+        if (code === 'file-too-large') {
+          setError(`${file.name} のファイルサイズが大きすぎます。5MB以下の画像を選択してください。`)
+        } else if (code === 'file-invalid-type') {
+          setError(`${file.name} は画像ファイルではありません。PNG、JPEG、GIF、WebPを選択してください。`)
+        }
+      })
+    })
+  }, [])
 
   const heroDropzone = useDropzone({
     onDrop: onDropHero,
@@ -82,9 +86,11 @@ export default function UploadForm({ trainer, onSuccess }) {
       'image/gif': [],
       'image/webp': []
     },
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 5 * 1024 * 1024,
     maxFiles: 1,
-    multiple: false
+    multiple: false,
+    noClick: false,
+    noKeyboard: false
   })
 
   const deleteOldFiles = async (slug, type) => {
@@ -303,33 +309,45 @@ export default function UploadForm({ trainer, onSuccess }) {
           {trainer.name} 様
         </p>
 
+        {/* ドロップゾーンをformの外に配置 */}
+        <div style={{ marginBottom: '30px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '15px',
+            color: '#00d4ff',
+            fontSize: '14px',
+            fontWeight: '600'
+          }}>
+            プロフィール画像（必須）
+          </label>
+          <DropZone 
+            dropzone={profileDropzone} 
+            preview={profilePreview} 
+            label="顔写真推奨（5MB以下）" 
+            type="profile" 
+          />
+        </div>
+
+        <div style={{ marginBottom: '40px' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '15px',
+            color: '#00d4ff',
+            fontSize: '14px',
+            fontWeight: '600'
+          }}>
+            トップ背景画像（任意）
+          </label>
+          <DropZone 
+            dropzone={heroDropzone} 
+            preview={heroPreview} 
+            label="未選択の場合、プロフィール画像を使用（5MB以下）" 
+            type="hero" 
+          />
+        </div>
+
+        {/* アップロードボタンだけformに */}
         <form onSubmit={handleUpload}>
-          <div style={{ marginBottom: '30px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '15px',
-              color: '#00d4ff',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}>
-              プロフィール画像（必須）
-            </label>
-            <DropZone dropzone={profileDropzone} preview={profilePreview} label="顔写真推奨（5MB以下）" type="profile" />
-          </div>
-
-          <div style={{ marginBottom: '40px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '15px',
-              color: '#00d4ff',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}>
-              トップ背景画像（任意）
-            </label>
-            <DropZone dropzone={heroDropzone} preview={heroPreview} label="未選択の場合、プロフィール画像を使用（5MB以下）" type="hero" />
-          </div>
-
           <button
             type="submit"
             disabled={uploading || uploadComplete}
