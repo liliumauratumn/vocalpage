@@ -106,6 +106,103 @@ const handleVerifyKey = async (e) => {
   }
 }
 
+const handleUpload = async (e) => {
+    e.preventDefault()
+    
+    if (!profileImage) {
+      setError('プロフィール画像は必須です')
+      return
+    }
+
+    setUploading(true)
+    setError('')
+
+    try {
+      // レート制限チェック
+      const limitCheck = await fetch('/api/check-upload-limit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      const limitData = await limitCheck.json()
+
+      if (!limitCheck.ok) {
+        setError(limitData.error)
+        setUploading(false)
+        return
+      }
+
+      const { data: currentTrainer } = await supabase
+        .from('trainers')
+        .select('status')
+        .eq('slug', trainer.slug)
+        .single()
+      
+      const wasActive = currentTrainer?.status === 'active'
+
+      await deleteOldFiles(trainer.slug, 'profile')
+      if (heroImage) {
+        await deleteOldFiles(trainer.slug, 'hero')
+      }
+
+      const profileExt = profileImage.name.split('.').pop()
+      const profilePath = `${trainer.slug}-profile.${profileExt}`
+      
+      const { error: profileError } = await supabase.storage
+        .from('trainer-photos')
+        .upload(profilePath, profileImage, { upsert: true })
+
+      if (profileError) throw profileError
+
+      let heroPath = null
+      if (heroImage) {
+        const heroExt = heroImage.name.split('.').pop()
+        heroPath = `${trainer.slug}-hero.${heroExt}`
+        
+        const { error: heroError } = await supabase.storage
+          .from('trainer-photos')
+          .upload(heroPath, heroImage, { upsert: true })
+
+        if (heroError) throw heroError
+      }
+
+      const timestamp = Date.now()
+      
+      const { data: profileUrl } = supabase.storage
+        .from('trainer-photos')
+        .getPublicUrl(profilePath)
+
+      const { data: heroUrl } = heroImage ? supabase.storage
+        .from('trainer-photos')
+        .getPublicUrl(heroPath) : { data: null }
+
+      const profileUrlWithCache = `${profileUrl.publicUrl}?v=${timestamp}`
+      const heroUrlWithCache = heroUrl ? `${heroUrl.publicUrl}?v=${timestamp}` : null
+
+      const { error: updateError } = await supabase
+        .from('trainers')
+        .update({
+          photo_url: profileUrlWithCache,
+          hero_image: heroUrlWithCache,
+          status: 'pending'
+        })
+        .eq('slug', trainer.slug)
+
+      if (updateError) throw updateError
+
+      setUploading(false)
+      setUploadComplete(true)
+      
+      setTimeout(() => {
+        setWasUpdate(wasActive)
+        setUploadSuccess(true)
+      }, 2000)
+
+    } catch (error) {
+      setError(`エラー: ${error.message}`)
+      setUploading(false)
+    }
+  }
 // --- 認証画面のJSX（正しい修正版） ---
 if (!isAuthenticated) {
   return (
