@@ -219,7 +219,8 @@ export default function UploadPage({ trainer }) {
               background: 'rgba(255,193,7,0.1)',
               border: '1px solid rgba(255,193,7,0.3)',
               borderRadius: '8px',
-              marginTop: '20px'
+              marginTop: '20px',
+              textAlign: 'center'
             }}>
               <div style={{ fontSize: '11px', color: 'rgba(255,193,7,0.8)', marginBottom: '5px', letterSpacing: '0.1em' }}>
                 💡 ヒント
@@ -236,6 +237,7 @@ export default function UploadPage({ trainer }) {
                 marginBottom: '10px',
                 color: '#00d4ff',
                 fontSize: '13px'
+                textAlign: 'center'
               }}>
                 編集キーを入力してください
               </label>
@@ -253,6 +255,7 @@ export default function UploadPage({ trainer }) {
                   borderRadius: '5px',
                   color: '#fff',
                   fontSize: '15px'
+                  textAlign: 'center'
                 }}
               />
             </div>
