@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
+import TextPressure from '../components/ui/TextPressure'
 
 export default function Home({ trainers }) {
   return (
@@ -15,17 +16,24 @@ export default function Home({ trainers }) {
       padding: '40px 20px',
       fontFamily: '"Inter", -apple-system, sans-serif'
     }}>
-      <h1 style={{
-        fontSize: 'clamp(40px, 8vw, 80px)',
-        fontWeight: '900',
-        marginBottom: '20px',
-        textAlign: 'center',
-        background: 'linear-gradient(135deg, #00d4ff, #667eea)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent'
-      }}>
-        VocalPage12
-      </h1>
+     <div style={{ height: '200px',
+     
+     width: '90vw',           // ← 追加：画面幅の90%
+  maxWidth: '1000px',  
+     
+      marginBottom: '20px' }}>
+  <TextPressure
+    text="VocalPage"
+     flex={true}
+       stroke={false}
+    textColor="#00d4ff"
+     strokeColor="#A90082"
+    minFontSize={60}
+    width={true}
+    weight={true}
+    italic={true}
+  />
+</div>
       
       <p style={{
         fontSize: '16px',
