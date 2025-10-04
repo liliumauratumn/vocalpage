@@ -3,8 +3,23 @@ import Link from 'next/link'
 import Image from 'next/image'
 import TextPressure from '../components/ui/TextPressure'
 import Prism from '../components/ui/Prism'
-
+import Galaxy from '../components/ui/Galaxy'
+import { useState, useEffect } from 'react'
 export default function Home({ trainers }) {
+
+  const [backgroundType, setBackgroundType] = useState(null)
+  
+  useEffect(() => {
+    // 0か1をランダムに選択（50%ずつ）
+    const random = Math.random() < 0.5 ? 'prism' : 'galaxy'
+    setBackgroundType(random)
+  }, [])
+  
+  // まだ背景が決まっていない場合は何も表示しない
+  if (!backgroundType) {
+    return <div style={{ minHeight: '100vh', background: '#000' }} />
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -12,27 +27,38 @@ export default function Home({ trainers }) {
       color: '#fff',
       position: 'relative'
     }}>
-      {/* 背景：Prism */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 0
-      }}>
-        <Prism
-          animationType="rotate"
-          timeScale={0.5}
-          height={3.5}
-          baseWidth={5.5}
-          scale={3.6}
-          hueShift={0}
-          colorFrequency={1}
-          noise={0.1}
-          glow={1}
-        />
-      </div>
+    {/* 背景：PrismまたはGalaxy */}
+<div style={{
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  zIndex: 0
+}}>
+  {backgroundType === 'prism' ? (
+    <Prism
+      animationType="rotate"
+      timeScale={0.5}
+      height={3.5}
+      baseWidth={5.5}
+      scale={3.6}
+      hueShift={0}
+      colorFrequency={1}
+      noise={0.1}
+      glow={1}
+    />
+  ) : (
+    <Galaxy
+      mouseRepulsion={true}
+      mouseInteraction={true}
+      density={1.5}
+      glowIntensity={0.5}
+      saturation={0.8}
+      hueShift={240}
+    />
+  )}
+</div>
 
       {/* メインコンテンツ */}
       <div style={{
