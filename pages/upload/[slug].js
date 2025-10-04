@@ -82,7 +82,7 @@ export default function UploadPage({ trainer }) {
   setAuthError('')
 
   try {
-    const response = await fetch('/api/verify-edit-key', {
+    const response = await fetch('/api/auth', {
       method: 'POST',
       mode: 'cors',
   credentials: 'same-origin',
