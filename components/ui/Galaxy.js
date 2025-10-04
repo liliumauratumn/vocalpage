@@ -334,7 +334,7 @@ export default function Galaxy({
     <div 
       ref={ctnDom} 
       style={{
-    position: 'static',
+       position: 'relative',
         width: '100%',
         height: '100%'
       }}
