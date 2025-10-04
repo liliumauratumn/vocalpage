@@ -8,6 +8,11 @@ export default function UploadPage({ trainer }) {
   const [heroImage, setHeroImage] = useState(null)
   const [profilePreview, setProfilePreview] = useState(null)
   const [heroPreview, setHeroPreview] = useState(null)
+  // 編集キー認証用の状態（追加）
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [editKey, setEditKey] = useState('')
+  const [authError, setAuthError] = useState('')
+  const [verifying, setVerifying] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadComplete, setUploadComplete] = useState(false)
   const [error, setError] = useState('')
@@ -71,7 +76,32 @@ export default function UploadPage({ trainer }) {
       }
     }
   }
+// 編集キー認証関数（追加）
+  const handleVerifyKey = async (e) => {
+    e.preventDefault()
+    setVerifying(true)
+    setAuthError('')
 
+    try {
+      const response = await fetch('/api/verify-edit-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: trainer.slug, editKey: editKey })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setIsAuthenticated(true)
+      } else {
+        setAuthError(data.error || '認証に失敗しました')
+      }
+    } catch (error) {
+      setAuthError('エラーが発生しました')
+    } finally {
+      setVerifying(false)
+    }
+  }
   const handleUpload = async (e) => {
     e.preventDefault()
     
@@ -157,7 +187,97 @@ export default function UploadPage({ trainer }) {
       setUploading(false)
     }
   }
+// 編集キー認証画面（追加）
+  if (!isAuthenticated) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#000',
+        color: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        fontFamily: '"Inter", -apple-system, sans-serif'
+      }}>
+        <div style={{
+          maxWidth: '400px',
+          width: '100%',
+          background: 'rgba(255,255,255,0.05)',
+          padding: '40px',
+          borderRadius: '10px',
+          border: '1px solid rgba(255,255,255,0.1)'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '15px' }}>🔐</div>
+            <h1 style={{ fontSize: '24px', marginBottom: '10px' }}>編集キー認証</h1>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{trainer.name} 様</p>
+          </div>
 
+          <form onSubmit={handleVerifyKey}>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '10px',
+                color: '#00d4ff',
+                fontSize: '13px'
+              }}>
+                編集キーを入力してください
+              </label>
+              <input
+                type="text"
+                value={editKey}
+                onChange={(e) => setEditKey(e.target.value)}
+                placeholder="登録時に設定したキーワード"
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '5px',
+                  color: '#fff',
+                  fontSize: '15px'
+                }}
+              />
+            </div>
+
+            {authError && (
+              <div style={{
+                padding: '10px',
+                background: 'rgba(255,0,0,0.2)',
+                border: '1px solid rgba(255,0,0,0.4)',
+                borderRadius: '5px',
+                color: '#ff6b6b',
+                fontSize: '13px',
+                marginBottom: '20px'
+              }}>
+                {authError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={verifying}
+              style={{
+                width: '100%',
+                padding: '15px',
+                background: verifying ? '#666' : 'linear-gradient(90deg, #00d4ff, #667eea)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: verifying ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {verifying ? '確認中...' : '認証する'}
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
   // 成功画面を表示
   if (uploadSuccess) {
     const pageUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${trainer.slug}`
