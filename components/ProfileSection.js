@@ -22,67 +22,67 @@ export default function ProfileSection({ trainer, theme, isPending }) {
         gap: '60px',
         alignItems: 'center'
       }}>
-     <div style={{
-  position: 'relative',
-  width: '100%',
-  maxWidth: '500px',
-  paddingBottom: 'min(120%, 600px)',
-  overflow: 'hidden',
-  borderRadius: '10px',
-  border: `2px solid ${theme.primary}20`,
-  background: 'rgba(255,255,255,0.02)'
-}}>
-  <Image 
-    src={trainer.photo_url}
-    alt={trainer.name}
-    fill
-    style={{ 
-      objectFit: 'cover',
-      filter: isPending ? 'blur(15px)' : 'none'
-    }}
-  />
-  
-  {isPending && (
-    <div style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      background: 'rgba(0,0,0,0.4)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '15px'
-    }}>
-      <div style={{
-        width: '80px',
-        height: '80px',
-        borderRadius: '50%',
-        background: 'rgba(255,255,255,0.1)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '40px',
-        backdropFilter: 'blur(10px)'
-      }}>
-        ⏳
-      </div>
-      <div style={{
-        color: 'rgba(255,255,255,0.8)',
-        fontSize: '12px',
-        letterSpacing: '0.2em',
-        background: 'rgba(0,0,0,0.3)',
-        padding: '8px 16px',
-        borderRadius: '15px',
-        backdropFilter: 'blur(10px)'
-      }}>
-        画像確認中
-      </div>
-    </div>
-  )}
-</div>
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '500px',
+          paddingBottom: 'min(120%, 600px)',
+          overflow: 'hidden',
+          borderRadius: '10px',
+          border: `2px solid ${theme.primary}20`,
+          background: 'rgba(255,255,255,0.02)'
+        }}>
+          {isPending ? (
+            <>
+              <Image 
+                src={trainer.photo_url}
+                alt={trainer.name}
+                fill
+                style={{ 
+                  objectFit: 'cover',
+                  filter: 'blur(15px)'
+                }}
+              />
+              
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(0,0,0,0.4)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '15px'
+              }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '40px',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  ⏳
+                </div>
+                <div style={{
+                  color: 'rgba(255,255,255,0.8)',
+                  fontSize: '12px',
+                  letterSpacing: '0.2em',
+                  background: 'rgba(0,0,0,0.3)',
+                  padding: '8px 16px',
+                  borderRadius: '15px',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  画像確認中
+                </div>
+              </div>
+            </>
           ) : (
             <Image 
               src={trainer.photo_url}
@@ -161,7 +161,6 @@ export default function ProfileSection({ trainer, theme, isPending }) {
             </div>
           </div>
 
-          {/* レッスン詳細情報 */}
           <div style={{
             marginTop: '60px',
             padding: '30px',
