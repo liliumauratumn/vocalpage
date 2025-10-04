@@ -1,6 +1,6 @@
 // components/UploadForm.js
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
 
@@ -13,6 +13,22 @@ export default function UploadForm({ trainer, onSuccess }) {
   const [error, setError] = useState('')
   const [uploadComplete, setUploadComplete] = useState(false)
   const [dragActive, setDragActive] = useState({ profile: false, hero: false })
+
+  // Safari対応：ページ全体でファイルが開くのを防ぐ
+  useEffect(() => {
+    const preventDefaults = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    window.addEventListener('dragover', preventDefaults)
+    window.addEventListener('drop', preventDefaults)
+
+    return () => {
+      window.removeEventListener('dragover', preventDefaults)
+      window.removeEventListener('drop', preventDefaults)
+    }
+  }, [])
 
   // 画像ファイルを処理する関数
   const handleFile = (file, type) => {
