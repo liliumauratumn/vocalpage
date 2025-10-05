@@ -1,30 +1,35 @@
-// pages/edit/[slug].js - 美しい編集ページ
+// pages/edit/[slug].js - 美しい編集ページ（DB接続版）
 // トレーナー情報編集ページ
 
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 
 export default function EditPage() {
+  const router = useRouter()
+  const { slug } = router.query
+  
   const [step, setStep] = useState('auth')
   const [editKey, setEditKey] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
-    name: '山田太郎',
-    area: '渋谷',
-    bio: 'ボイストレーナー歴10年。ポップスからR&Bまで幅広く指導しています。初心者の方から、プロを目指す方まで丁寧に指導します。',
-    specialties: ['ポップス', 'R&B', 'ジャズ'],
-    lesson_types: ['マンツーマン', 'オンライン'],
-    career_start_year: '2015',
-    price: '5000',
-    lesson_duration: '60',
-    youtube_url: 'https://youtube.com/example',
+    name: '',
+    area: '',
+    bio: '',
+    specialties: [],
+    lesson_types: [],
+    career_start_year: '',
+    price: '',
+    lesson_duration: '',
+    youtube_url: '',
     website_url: '',
-    instagram_url: 'https://instagram.com/yamada',
-    twitter_url: 'https://x.com/yamada',
-    line_url: 'https://line.me/yamada',
-    contact: 'yamada@example.com'
+    instagram_url: '',
+    twitter_url: '',
+    line_url: '',
+    contact: ''
   })
 
   const [originalData, setOriginalData] = useState({})
@@ -40,13 +45,58 @@ export default function EditPage() {
     'マンツーマン', 'グループレッスン', 'オンライン', '出張レッスン'
   ]
 
-  const handleAuth = () => {
-    if (editKey.toLowerCase() === 'test') {
-      setStep('edit')
-      setError('')
-      setOriginalData({...formData})
-    } else {
-      setError('編集キーが正しくありません')
+  const handleAuth = async () => {
+    if (!slug) {
+      setError('URLが正しくありません')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          slug, 
+          editKey 
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.trainer) {
+        // データベースから取得したデータをフォームに設定
+        const trainer = data.trainer
+        setFormData({
+          name: trainer.name || '',
+          area: trainer.area || '',
+          bio: trainer.bio || '',
+          specialties: trainer.specialties || [],
+          lesson_types: trainer.lesson_types || [],
+          career_start_year: trainer.career_start_year?.toString() || '',
+          price: trainer.price || '',
+          lesson_duration: trainer.lesson_duration || '',
+          youtube_url: trainer.youtube_url || '',
+          website_url: trainer.website_url || '',
+          instagram_url: trainer.instagram_url || '',
+          twitter_url: trainer.twitter_url || '',
+          line_url: trainer.line_url || '',
+          contact: trainer.contact || ''
+        })
+        setOriginalData({...formData})
+        setStep('edit')
+      } else {
+        setError(data.error || '編集キーが正しくありません')
+      }
+    } catch (err) {
+      console.error('認証エラー:', err)
+      setError('通信エラーが発生しました')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -79,15 +129,16 @@ export default function EditPage() {
         '本当に移動しますか？'
       )
       if (confirmLeave) {
-        alert('画像編集ページ (/upload/yamada) へ移動します')
+        router.push(`/upload/${slug}`)
       }
     } else {
-      alert('画像編集ページ (/upload/yamada) へ移動します')
+      router.push(`/upload/${slug}`)
     }
   }
 
   const handleSave = () => {
     setSaving(true)
+    // TODO: 次のステップで保存API実装
     setTimeout(() => {
       setSaving(false)
       setHasChanges(false)
@@ -128,7 +179,7 @@ export default function EditPage() {
             プロフィール編集
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', marginBottom: '50px' }}>
-            yamada 様
+            {slug} 様
           </p>
 
           <label style={{
@@ -148,6 +199,7 @@ export default function EditPage() {
             onChange={(e) => setEditKey(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
             placeholder='編集キーを入力'
+            disabled={loading}
             style={{
               width: '100%',
               padding: '16px 20px',
@@ -159,7 +211,8 @@ export default function EditPage() {
               marginBottom: '20px',
               boxSizing: 'border-box',
               outline: 'none',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              opacity: loading ? 0.5 : 1
             }}
             onFocus={(e) => e.target.style.borderColor = '#00d4ff'}
             onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
@@ -181,29 +234,36 @@ export default function EditPage() {
 
           <button
             onClick={handleAuth}
+            disabled={loading}
             style={{
               width: '100%',
               padding: '16px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: loading 
+                ? 'rgba(102,126,234,0.5)' 
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: '#fff',
               border: 'none',
               borderRadius: '12px',
               fontSize: '16px',
               fontWeight: '600',
-              cursor: 'pointer',
+              cursor: loading ? 'default' : 'pointer',
               transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              boxShadow: '0 10px 30px rgba(102,126,234,0.3)'
+              boxShadow: loading ? 'none' : '0 10px 30px rgba(102,126,234,0.3)'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px)'
-              e.target.style.boxShadow = '0 15px 40px rgba(102,126,234,0.4)'
+              if (!loading) {
+                e.target.style.transform = 'translateY(-2px)'
+                e.target.style.boxShadow = '0 15px 40px rgba(102,126,234,0.4)'
+              }
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)'
-              e.target.style.boxShadow = '0 10px 30px rgba(102,126,234,0.3)'
+              if (!loading) {
+                e.target.style.transform = 'translateY(0)'
+                e.target.style.boxShadow = '0 10px 30px rgba(102,126,234,0.3)'
+              }
             }}
           >
-            ログイン
+            {loading ? '認証中...' : 'ログイン'}
           </button>
         </div>
       </div>
@@ -235,7 +295,7 @@ export default function EditPage() {
             プロフィール編集
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px' }}>
-            yamada 様
+            {slug} 様
           </p>
         </div>
 
@@ -508,7 +568,7 @@ export default function EditPage() {
 
             <div style={{ marginTop: '20px', textAlign: 'center' }}>
               <a
-                href="#"
+                href={`/${slug}`}
                 style={{
                   color: '#00d4ff',
                   fontSize: '15px',
