@@ -53,10 +53,9 @@ export default function RegisterPage() {
     const { data } = await supabase
       .from('trainers')
       .select('slug')
-      .eq('slug', slug)
-      .single();
+      .eq('slug', slug);
     
-    return !data; // dataがなければ使える
+    return data.length === 0; // 0件なら使える
   };
 
   // メール重複チェック関数
@@ -64,11 +63,11 @@ export default function RegisterPage() {
     const normalized = normalizeEmail(email);
     const { data } = await supabase
       .from('trainers')
-      .select('email')
-      .eq('email', normalized)
-      .single();
+      .select('email');
     
-    return !data; // dataがなければ使える
+    // DBの全メールを正規化して比較
+    const exists = data.some(row => normalizeEmail(row.email) === normalized);
+    return !exists; // 重複がなければ使える
   };
 
   // フォーム送信時の処理
