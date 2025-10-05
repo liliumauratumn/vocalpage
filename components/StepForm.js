@@ -2,6 +2,31 @@
 import React, { useState } from 'react';
 
 // ========== 定数・スタイル定義 ==========
+
+// メールアドレスの形式チェック関数（この関数を追加）
+const isValidEmail = (email) => {
+  // 基本的なメール形式の正規表現
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  if (!emailRegex.test(email)) {
+    return false;
+  }
+  
+  // 許可するTLD（トップレベルドメイン）のリスト
+  const allowedTLDs = [
+    'com', 'jp', 'net', 'org', 'edu', 'gov',
+    'co.jp', 'ne.jp', 'or.jp', 'ac.jp', 'go.jp',
+    'uk', 'us', 'ca', 'au', 'de', 'fr'
+  ];
+  
+  const domain = email.split('@')[1].toLowerCase();
+  
+  // ドメインの最後の部分をチェック
+  const hasTLD = allowedTLDs.some(tld => domain.endsWith('.' + tld));
+  
+  return hasTLD;
+};
+  
 const COLORS = {
   gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   success: '#00ff88',
@@ -69,25 +94,19 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
   const currentQuestion = questions[step];
 
   // バリデーション
-  const validateInput = (value, question) => {
-    if (!value.trim() && question.required) return false;
-    
-    if (question.type === 'email') {
-      // @の後にドットが含まれているかチェック
-      const atIndex = value.indexOf('@');
-      if (atIndex === -1 || !value.slice(atIndex).includes('.')) return false;
-      
-      const basicPattern = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
-      if (!basicPattern.test(value)) return false;
-      const parts = value.split('.');
-      return parts[parts.length - 1].length >= 2;
-    }
-    
-    if (question.id === 'slug') return /^[a-z0-9_]+$/i.test(value);
-    if (question.id === 'edit_key') return value.trim().length >= 4;
-    
-    return true;
-  };
+
+const validateInput = (value, question) => {
+  if (!value.trim() && question.required) return false;
+  
+  if (question.type === 'email') {
+    return isValidEmail(value); // ← ここだけに変更！
+  }
+  
+  if (question.id === 'slug') return /^[a-z0-9_]+$/i.test(value);
+  if (question.id === 'edit_key') return value.trim().length >= 4;
+  
+  return true;
+};
 
   const isValid = currentQuestion ? validateInput(currentAnswer, currentQuestion) : true;
 
