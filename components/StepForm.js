@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 // ========== 定数・スタイル定義 ==========
 
-// メールアドレスの形式チェック関数（この関数を追加）
+// メールアドレスの形式チェック関数
 const isValidEmail = (email) => {
   // 基本的なメール形式の正規表現
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -12,16 +12,20 @@ const isValidEmail = (email) => {
     return false;
   }
   
-  // 許可するTLD（トップレベルドメイン）のリスト
+  const domain = email.split('@')[1].toLowerCase();
+  
+  // Gmailの場合は.comだけ許可
+  if (domain.startsWith('gmail.') || domain.startsWith('googlemail.')) {
+    return domain === 'gmail.com' || domain === 'googlemail.com';
+  }
+  
+  // その他のドメインは許可するTLDリスト
   const allowedTLDs = [
     'com', 'jp', 'net', 'org', 'edu', 'gov',
     'co.jp', 'ne.jp', 'or.jp', 'ac.jp', 'go.jp',
     'uk', 'us', 'ca', 'au', 'de', 'fr'
   ];
   
-  const domain = email.split('@')[1].toLowerCase();
-  
-  // ドメインの最後の部分をチェック
   const hasTLD = allowedTLDs.some(tld => domain.endsWith('.' + tld));
   
   return hasTLD;
@@ -184,23 +188,24 @@ const validateInput = (value, question) => {
     }
   };
 
-  const handleNext = () => {
-    if (!validateInput(currentAnswer, currentQuestion)) {
-      setShowValidation(true);
-      return;
-    }
-    
-    // URL重複チェックで使えない場合は進めない
-    if (currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable') {
-      setShowValidation(true);
-      return;
-    }
-    
-    // メール重複チェックで使えない場合は進めない
-    if (currentQuestion.type === 'email' && emailCheckStatus === 'unavailable') {
-      setShowValidation(true);
-      return;
-    }
+const handleNext = () => {
+  if (!validateInput(currentAnswer, currentQuestion)) {
+    setShowValidation(true);
+    return;
+  }
+  
+  // URLチェックが完了してavailableでない限り進めない
+  if (currentQuestion.id === 'slug' && urlCheckStatus !== 'available') {
+    setShowValidation(true);
+    return;
+  }
+  
+  // メールチェックが完了してavailableでない限り進めない
+  if (currentQuestion.type === 'email' && emailCheckStatus !== 'available') {
+    setShowValidation(true);
+    return;
+  }
+  
     
     setAnswers({...answers, [currentQuestion.id]: currentAnswer});
     setShowFeedback(true);
@@ -361,11 +366,18 @@ const validateInput = (value, question) => {
               style={{...inputStyle(isValid, currentAnswer, showValidation), minHeight: '120px', 
                 fontFamily: 'inherit', resize: 'vertical'}} />
           ) : (
-            <input type={currentQuestion.type === 'email' ? 'email' : 'text'}
-              value={currentAnswer} onChange={(e) => handleInputChange(e.target.value)}
-              placeholder={currentQuestion.placeholder} autoFocus
-              onKeyPress={(e) => e.key === 'Enter' && isValid && handleNext()}
-              style={inputStyle(isValid, currentAnswer, showValidation)} />
+         <input type={currentQuestion.type === 'email' ? 'email' : 'text'}
+  value={currentAnswer} onChange={(e) => handleInputChange(e.target.value)}
+  placeholder={currentQuestion.placeholder} autoFocus
+  onKeyPress={(e) => {
+    if (e.key === 'Enter') {
+      // チェック中またはエラー時は進めない
+      if (urlCheckStatus === 'checking' || urlCheckStatus === 'unavailable') return;
+      if (emailCheckStatus === 'checking' || emailCheckStatus === 'unavailable') return;
+      if (isValid) handleNext();
+    }
+  }}
+  style={inputStyle(isValid, currentAnswer, showValidation)} />
           )}
 
           {/* バリデーションメッセージ */}
