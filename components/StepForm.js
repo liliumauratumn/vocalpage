@@ -53,7 +53,7 @@ const inputStyle = (isValid, hasValue, showError) => ({
 });
 
 // ========== コンポーネント本体 ==========
-export default function StepForm({ questions, initialData = {}, onComplete, submitButtonText = '送信', onCheckUrl }) {
+export default function StepForm({ questions, initialData = {}, onComplete, submitButtonText = '送信', onCheckUrl, onCheckEmail }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState(initialData);
   const [currentAnswer, setCurrentAnswer] = useState('');
@@ -62,6 +62,7 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [urlCheckStatus, setUrlCheckStatus] = useState(null); // 'checking' | 'available' | 'unavailable' | null
+  const [emailCheckStatus, setEmailCheckStatus] = useState(null); // 'checking' | 'available' | 'unavailable' | null
 
   const totalQuestions = questions.length;
   const progress = (step / totalQuestions) * 100;
@@ -113,6 +114,29 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
     }
   };
 
+  // メール重複チェック（debounce付き）
+  const checkEmailDebounce = React.useRef(null);
+  
+  const checkEmailAvailability = async (email) => {
+    if (!onCheckEmail || !email.trim() || currentQuestion?.type !== 'email') return;
+    
+    // 形式が正しくない場合はチェックしない
+    if (!validateInput(email, currentQuestion)) {
+      setEmailCheckStatus(null);
+      return;
+    }
+    
+    setEmailCheckStatus('checking');
+    
+    try {
+      const available = await onCheckEmail(email);
+      setEmailCheckStatus(available ? 'available' : 'unavailable');
+    } catch (error) {
+      console.error('Email check error:', error);
+      setEmailCheckStatus(null);
+    }
+  };
+
   // イベントハンドラー
   const handleInputChange = (value) => {
     setCurrentAnswer(value);
@@ -126,6 +150,17 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
       }
       checkUrlDebounce.current = setTimeout(() => {
         checkUrlAvailability(value);
+      }, 500);
+    }
+    
+    // メール重複チェック（500ms後）
+    if (currentQuestion?.type === 'email' && onCheckEmail) {
+      setEmailCheckStatus(null);
+      if (checkEmailDebounce.current) {
+        clearTimeout(checkEmailDebounce.current);
+      }
+      checkEmailDebounce.current = setTimeout(() => {
+        checkEmailAvailability(value);
       }, 500);
     }
   };
@@ -142,12 +177,20 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
       return;
     }
     
+    // メール重複チェックで使えない場合は進めない
+    if (currentQuestion.type === 'email' && emailCheckStatus === 'unavailable') {
+      setShowValidation(true);
+      return;
+    }
+    
     setAnswers({...answers, [currentQuestion.id]: currentAnswer});
     setShowFeedback(true);
 
     setTimeout(() => {
       setShowFeedback(false);
-      if ((step + 1) / totalQuestions === 0.5) {
+      // マイルストーン表示（40-60%の範囲）
+      const progressPercent = ((step + 1) / totalQuestions) * 100;
+      if (progressPercent >= 40 && progressPercent <= 60) {
         setShowMilestone(true);
         setTimeout(() => setShowMilestone(false), 2000);
       }
@@ -155,6 +198,7 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
       setCurrentAnswer('');
       setShowValidation(false);
       setUrlCheckStatus(null); // リセット
+      setEmailCheckStatus(null); // リセット
     }, 800);
   };
 
@@ -163,6 +207,7 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
     setCurrentAnswer('');
     setShowValidation(false);
     setUrlCheckStatus(null); // リセット
+    setEmailCheckStatus(null); // リセット
   };
 
   const handleSubmit = async () => {
@@ -175,14 +220,14 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
     return (
       <div style={{...containerStyle, alignItems: 'center', justifyContent: 'center'}}>
         <div style={{...cardStyle, maxWidth: '500px', textAlign: 'center', animation: 'scaleIn 0.5s ease-out'}}>
-          <div style={{ fontSize: '80px', marginBottom: '20px' }}>🎉</div>
+          <div style={{ fontSize: '80px', marginBottom: '20px' }}>✅</div>
           <h1 style={{ fontSize: '32px', color: '#333', marginBottom: '20px', fontWeight: '700' }}>確認してください</h1>
           
           <div style={{ textAlign: 'left', background: '#f5f5f5', padding: '20px', borderRadius: '10px', marginBottom: '30px' }}>
             {questions.map((q) => (
               <div key={q.id} style={{ marginBottom: '15px' }}>
                 <div style={{ fontSize: '12px', color: COLORS.darkGray, marginBottom: '5px' }}>
-                  {q.title.replace(/[🎤🔗📧📝]/g, '').trim()}
+                  {q.title.replace(/[🎤🔗📧🔑💡]/g, '').trim()}
                 </div>
                 <div style={{ fontSize: '16px', color: '#333', fontWeight: '600' }}>
                   {answers[q.id] || '(未入力)'}
@@ -233,7 +278,7 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
             <div style={{ color: 'white', fontSize: '16px', fontWeight: '700', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-              質問 {step} / {totalQuestions}
+              質問 {step + 1} / {totalQuestions}
             </div>
             <div style={{ color: 'white', fontSize: '18px', fontWeight: '700', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
               {Math.round(progress)}% 🎯
@@ -320,7 +365,7 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
                 <span style={{ color: '#FFA500' }}>⏳ チェック中...</span>
               )}
               {urlCheckStatus === 'available' && (
-                <span style={{ color: COLORS.success }}>✓ このURLは使えます！</span>
+                <span style={{ color: COLORS.success }}>✓ このURLは使えます!</span>
               )}
               {urlCheckStatus === 'unavailable' && (
                 <span style={{ color: COLORS.error }}>✗ このURLは既に使われています</span>
@@ -328,7 +373,22 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
             </div>
           )}
 
-          {currentAnswer && isValid && currentQuestion.id !== 'slug' && (
+          {/* メール重複チェック結果 */}
+          {currentQuestion.type === 'email' && currentAnswer && isValid && (
+            <div style={{ marginTop: '10px', fontSize: '14px', fontWeight: '600', animation: 'fadeIn 0.3s ease-out' }}>
+              {emailCheckStatus === 'checking' && (
+                <span style={{ color: '#FFA500' }}>⏳ チェック中...</span>
+              )}
+              {emailCheckStatus === 'available' && (
+                <span style={{ color: COLORS.success }}>✓ このメールアドレスは使えます!</span>
+              )}
+              {emailCheckStatus === 'unavailable' && (
+                <span style={{ color: COLORS.error }}>✗ このメールアドレスは既に登録されています</span>
+              )}
+            </div>
+          )}
+
+          {currentAnswer && isValid && currentQuestion.id !== 'slug' && currentQuestion.type !== 'email' && (
             <div style={{ marginTop: '10px', color: COLORS.success, fontSize: '14px', fontWeight: '600', animation: 'fadeIn 0.3s ease-out' }}>
               ✓ いいですね!
             </div>
@@ -340,7 +400,9 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
                 !isValid || 
                 (!currentAnswer.trim() && currentQuestion.required) ||
                 (currentQuestion.id === 'slug' && urlCheckStatus === 'checking') ||
-                (currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable')
+                (currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable') ||
+                (currentQuestion.type === 'email' && emailCheckStatus === 'checking') ||
+                (currentQuestion.type === 'email' && emailCheckStatus === 'unavailable')
               }
               style={{
                 ...baseButton, flex: 1,
@@ -348,23 +410,31 @@ export default function StepForm({ questions, initialData = {}, onComplete, subm
                   isValid && 
                   (currentAnswer.trim() || !currentQuestion.required) &&
                   !(currentQuestion.id === 'slug' && urlCheckStatus === 'checking') &&
-                  !(currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable')
+                  !(currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable') &&
+                  !(currentQuestion.type === 'email' && emailCheckStatus === 'checking') &&
+                  !(currentQuestion.type === 'email' && emailCheckStatus === 'unavailable')
                 ) ? COLORS.gradient : COLORS.gray,
                 color: 'white',
                 cursor: (
                   isValid && 
                   (currentAnswer.trim() || !currentQuestion.required) &&
                   !(currentQuestion.id === 'slug' && urlCheckStatus === 'checking') &&
-                  !(currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable')
+                  !(currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable') &&
+                  !(currentQuestion.type === 'email' && emailCheckStatus === 'checking') &&
+                  !(currentQuestion.type === 'email' && emailCheckStatus === 'unavailable')
                 ) ? 'pointer' : 'not-allowed',
                 boxShadow: (
                   isValid && 
                   (currentAnswer.trim() || !currentQuestion.required) &&
                   !(currentQuestion.id === 'slug' && urlCheckStatus === 'checking') &&
-                  !(currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable')
+                  !(currentQuestion.id === 'slug' && urlCheckStatus === 'unavailable') &&
+                  !(currentQuestion.type === 'email' && emailCheckStatus === 'checking') &&
+                  !(currentQuestion.type === 'email' && emailCheckStatus === 'unavailable')
                 ) ? '0 4px 15px rgba(102, 126, 234, 0.4)' : 'none'
               }}>
-              {currentQuestion.id === 'slug' && urlCheckStatus === 'checking' ? 'チェック中...' : '次へ →'}
+              {(currentQuestion.id === 'slug' && urlCheckStatus === 'checking') || 
+               (currentQuestion.type === 'email' && emailCheckStatus === 'checking') 
+                ? 'チェック中...' : '次へ →'}
             </button>
 
             {!currentQuestion.required && (
