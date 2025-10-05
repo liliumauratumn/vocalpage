@@ -63,12 +63,11 @@ export default function RegisterPage() {
     const normalized = normalizeEmail(email);
     const { data } = await supabase
       .from('trainers')
-      .select('email');
-    
-    // DBの全メールを正規化して比較
-    const exists = data.some(row => normalizeEmail(row.email) === normalized);
-    return !exists; // 重複がなければ使える
-  };
+      .select('email')
+   .eq('email', normalized); // 正規化した形式で検索
+  
+  return data.length === 0; // 0件なら使える
+};
 
   // フォーム送信時の処理
   const handleComplete = async (answers) => {
@@ -77,7 +76,7 @@ export default function RegisterPage() {
       .insert({
         slug: answers.slug,
         name: answers.name,
-        email: answers.email, // 入力された形式のまま保存
+   email: normalizeEmail(answers.email), // 正規化して保存（常に@gmail.com形式）
         edit_key: answers.edit_key.toLowerCase(),
         edit_key_hint: answers.edit_key_hint || null,
         status: 'pending',
