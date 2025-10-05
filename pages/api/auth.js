@@ -1,3 +1,4 @@
+// pages/api/auth.js
 import { supabase } from '../../lib/supabase'
 
 export default async function handler(req, res) {
@@ -11,9 +12,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: '必要な情報が不足しています' })
   }
 
+  // 全データを取得
   const { data: trainer, error } = await supabase
     .from('trainers')
-    .select('edit_key, name')
+    .select('*')
     .eq('slug', slug)
     .single()
 
@@ -28,8 +30,11 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: '編集キーが正しくありません' })
   }
 
+  // edit_keyは削除して返す（セキュリティ）
+  const { edit_key, ...trainerData } = trainer
+
   return res.status(200).json({ 
     success: true,
-    name: trainer.name
+    trainer: trainerData
   })
 }
