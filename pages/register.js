@@ -33,8 +33,20 @@ export default function RegisterPage() {
       type: 'text',
       placeholder: '覚えやすいパスワード',
       required: true
+    },
+    {
+      id: 'edit_key_hint',
+      title: '💡 編集キーのヒント（忘れた時用）',
+      type: 'text',
+      placeholder: '例: 愛犬の名前',
+      required: false
     }
   ];
+
+  // メールアドレス正規化関数
+  const normalizeEmail = (email) => {
+    return email.toLowerCase().replace('@googlemail.com', '@gmail.com');
+  };
 
   // URL重複チェック関数
   const checkUrlAvailability = async (slug) => {
@@ -47,6 +59,18 @@ export default function RegisterPage() {
     return !data; // dataがなければ使える
   };
 
+  // メール重複チェック関数
+  const checkEmailAvailability = async (email) => {
+    const normalized = normalizeEmail(email);
+    const { data } = await supabase
+      .from('trainers')
+      .select('email')
+      .eq('email', normalized)
+      .single();
+    
+    return !data; // dataがなければ使える
+  };
+
   // フォーム送信時の処理
   const handleComplete = async (answers) => {
     const { error } = await supabase
@@ -54,15 +78,18 @@ export default function RegisterPage() {
       .insert({
         slug: answers.slug,
         name: answers.name,
-        email: answers.email,
+        email: answers.email, // 入力された形式のまま保存
         edit_key: answers.edit_key.toLowerCase(),
-        status: 'pending'
+        edit_key_hint: answers.edit_key_hint || null,
+        status: 'pending',
+        created_at: new Date().toISOString()
       });
 
     if (error) {
-      alert('エラーが発生しました');
+      console.error('登録エラー:', error);
+      alert('エラーが発生しました: ' + error.message);
     } else {
-      alert('登録完了！');
+      alert('登録完了！次は画像をアップロードしてください。');
       window.location.href = `/upload/${answers.slug}`;
     }
   };
@@ -72,6 +99,7 @@ export default function RegisterPage() {
       questions={questions}
       onComplete={handleComplete}
       onCheckUrl={checkUrlAvailability}
+      onCheckEmail={checkEmailAvailability}
       submitButtonText="登録する"
     />
   );
