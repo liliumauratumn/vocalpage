@@ -136,14 +136,45 @@ export default function EditPage() {
     }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!slug) return
+
     setSaving(true)
-    // TODO: 次のステップで保存API実装
-    setTimeout(() => {
+    setError('')
+
+    try {
+      const response = await fetch('/api/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          slug, 
+          formData 
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // 保存成功
+        setHasChanges(false)
+        setOriginalData({...formData})
+        
+        // 1.5秒後に「保存しました」を消す
+        setTimeout(() => {
+          setSaving(false)
+        }, 1500)
+      } else {
+        // 保存失敗
+        setSaving(false)
+        alert('保存に失敗しました: ' + (data.error || '不明なエラー'))
+      }
+    } catch (err) {
+      console.error('保存エラー:', err)
       setSaving(false)
-      setHasChanges(false)
-      setOriginalData({...formData})
-    }, 1500)
+      alert('通信エラーが発生しました')
+    }
   }
 
   if (step === 'auth') {
